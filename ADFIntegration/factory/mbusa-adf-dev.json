@@ -1,0 +1,9 @@
+{
+	"name": "mbusa-adf-dev",
+	"location": "eastus2",
+	"identity": {
+		"type": "SystemAssigned",
+		"principalId": "1cb4127c-9842-49f6-9bcf-5719519db628",
+		"tenantId": "a45fe71a-f480-4e42-ad5e-aff33165aa35"
+	}
+}

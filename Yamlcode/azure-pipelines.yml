@@ -11,8 +11,12 @@ trigger:
     - ADFIntegration
 
 variables:
-  isDev: $[eq(variables['Build.SourceBranch'], 'refs/heads/develop')]
-  isMain: $[eq(variables['Build.SourceBranch'], 'refs/heads/main')]
+- group: mbusa-adf
+- name: isDev
+  value: $[eq(variables['Build.SourceBranch'], 'refs/heads/develop')]
+- name: isMain
+  value: $[eq(variables['Build.SourceBranch'], 'refs/heads/main')]
+  
 
   
 pool:

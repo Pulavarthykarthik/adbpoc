@@ -186,7 +186,7 @@ stages:
                   inputs:
                     command: 'download'
                     vstsFeed: 'Azure-Data-Enterprise-Platform/$(feedname_dev)'
-                    vstsFeedPackage: 'feedname_dev'
+                    vstsFeedPackage: '$(feedname_dev)'
                     vstsPackageVersion: '*'
                     downloadDirectory: '$(System.DefaultWorkingDirectory)'
                     verbosity: 'Debug'

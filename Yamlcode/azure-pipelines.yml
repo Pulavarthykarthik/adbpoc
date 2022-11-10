@@ -247,17 +247,27 @@ stages:
     dependsOn: Build_ADF_Prod
     condition: succeeded('Build_ADF_Prod')
     jobs:
-      - deployment: publishinternal
-        displayName: Approval Deployment for ADF PROD Stage
-        environment: $(environment)
+    - job: waitForValidation
+      displayName: Wait for external validation
+      pool: server
+      timeoutInMinutes: 4320 # job times out in 3 days
+      steps:
+        - task: ManualValidation@0
+          timeoutInMinutes: 4320 # task times out in 3 days
+          inputs:
+           notifyUsers: |
+            $(notifyUsers)
+           instructions: 'Please validate the PROD build configuration'
+           onTimeout: 'reject'
+
 
 
 # Release pipeline for Prod
 
   - stage: ADF_Prod
     displayName: Deploying ADF in Prod
-    dependsOn: Build_ADF_Prod
-    condition: succeeded('Build_ADF_Prod')
+    dependsOn: Approve_Deployment_Prod
+    condition: and(succeeded('Approve_Deployment_Prod'),succeeded('Build_ADF_Prod'))
     jobs:
       - job: DeploytoProd
         pool:

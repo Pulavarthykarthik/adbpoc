@@ -1,0 +1,10 @@
+{
+	"name": "AzureKeyVaultsalesindia",
+	"properties": {
+		"annotations": [],
+		"type": "AzureKeyVault",
+		"typeProperties": {
+			"baseUrl": "https://mbusaadfkeyvaultdev.vault.azure.net/"
+		}
+	}
+}

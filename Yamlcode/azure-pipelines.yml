@@ -234,9 +234,10 @@ stages:
                   inputs: 
                     azureSubscription: $(myserviceconnection)
                     workingDirectory: $(System.DefaultWorkingDirectory)/$(TargetFolder)
+                    azurePowerShellVersion: 'LatestVersion'
                     ScriptPath: '$(System.DefaultWorkingDirectory)/$(TargetFolder)/PrePostDeploymentScript.ps1'
                     ScriptArguments: -armTemplate "$(System.DefaultWorkingDirectory)/$(TargetFolder)/ARMTemplateForFactory.json" -ResourceGroupName $(resourcegroup_dev) -DataFactoryName $(adfname_dev) -predeployment $true -deleteDeployment $false
-                    azurePowerShellVersion: 'LatestVersion'      
+                          
           
 
                 - task: AzureResourceManagerTemplateDeployment@3
@@ -258,9 +259,10 @@ stages:
                   inputs: 
                     azureSubscription: $(myserviceconnection)
                     workingDirectory: $(System.DefaultWorkingDirectory)/$(TargetFolder)
-                    ScriptPath: '$(System.DefaultWorkingDirectory)/$(TargetFolder)/PrePostDeploymentScript.ps1'
-                    ScriptArguments: -armTemplate "$(System.DefaultWorkingDirectory)/$(TargetFolder)/ARMTemplateForFactory.json" -ResourceGroupName $(resourcegroup_dev) -DataFactoryName $(adfname_dev) -predeployment $false -deleteDeployment $true
                     azurePowerShellVersion: 'LatestVersion'
+                    ScriptPath: '$(System.DefaultWorkingDirectory)/$(TargetFolder)/PrePostDeploymentScript.ps1'
+                    ScriptArguments: -armTemplate "$(System.DefaultWorkingDirectory)/$(TargetFolder)/ARMTemplateForFactory.json" -ResourceGroupName $(resourcegroup_dev) -DataFactoryName $(adfname_dev) -predeployment $false -deleteDeployment $false
+                   
 
   - stage:  Approve_Deployment_Prod
     displayName: Approval to Deploy to PROD Stage

@@ -15,17 +15,17 @@
 			"sinks": [
 				{
 					"dataset": {
-						"referenceName": "AzureSqlTablebadsales",
-						"type": "DatasetReference"
-					},
-					"name": "sink1"
-				},
-				{
-					"dataset": {
 						"referenceName": "tbl_salesdataset",
 						"type": "DatasetReference"
 					},
 					"name": "sink2"
+				},
+				{
+					"dataset": {
+						"referenceName": "AzureSqlTablebadtables",
+						"type": "DatasetReference"
+					},
+					"name": "sink3"
 				}
 			],
 			"transformations": [
@@ -55,6 +55,28 @@
 				"conditionalsplit1@GoodRows derive(salesfilename = 'indiasalegood.csv',",
 				"          saleDate = toDate(saleDate, 'dd-mmm-yy'),",
 				"          quantity = toInteger(quantity)) ~> filenamecolforgoodrows",
+				"filenamecolforgoodrows sink(allowSchemaDrift: true,",
+				"     validateSchema: false,",
+				"     input(",
+				"          saleDate as date,",
+				"          salesItem as string,",
+				"          country as string,",
+				"          quantity as integer",
+				"     ),",
+				"     deletable:false,",
+				"     insertable:true,",
+				"     updateable:false,",
+				"     upsertable:false,",
+				"     format: 'table',",
+				"     skipDuplicateMapInputs: true,",
+				"     skipDuplicateMapOutputs: true,",
+				"     errorHandlingOption: 'stopOnFirstError',",
+				"     mapColumn(",
+				"          saleDate,",
+				"          salesItem,",
+				"          country,",
+				"          quantity",
+				"     )) ~> sink2",
 				"filenamecolumnforerrorrows sink(allowSchemaDrift: true,",
 				"     validateSchema: false,",
 				"     input(",
@@ -78,29 +100,7 @@
 				"          country,",
 				"          quantity,",
 				"          salesfilename",
-				"     )) ~> sink1",
-				"filenamecolforgoodrows sink(allowSchemaDrift: true,",
-				"     validateSchema: false,",
-				"     input(",
-				"          saleDate as date,",
-				"          salesItem as string,",
-				"          country as string,",
-				"          quantity as integer",
-				"     ),",
-				"     deletable:false,",
-				"     insertable:true,",
-				"     updateable:false,",
-				"     upsertable:false,",
-				"     format: 'table',",
-				"     skipDuplicateMapInputs: true,",
-				"     skipDuplicateMapOutputs: true,",
-				"     errorHandlingOption: 'stopOnFirstError',",
-				"     mapColumn(",
-				"          saleDate,",
-				"          salesItem,",
-				"          country,",
-				"          quantity",
-				"     )) ~> sink2"
+				"     )) ~> sink3"
 			]
 		}
 	}

@@ -1,0 +1,33 @@
+{
+	"name": "AzureSqlTablebadtable",
+	"properties": {
+		"linkedServiceName": {
+			"referenceName": "AzureSqlDatabasetblbadtable",
+			"type": "LinkedServiceReference"
+		},
+		"annotations": [],
+		"type": "AzureSqlTable",
+		"schema": [
+			{
+				"name": "saleDate",
+				"type": "varchar"
+			},
+			{
+				"name": "salesItem",
+				"type": "varchar"
+			},
+			{
+				"name": "country",
+				"type": "varchar"
+			},
+			{
+				"name": "quantity",
+				"type": "varchar"
+			}
+		],
+		"typeProperties": {
+			"schema": "dbo",
+			"table": "tbsalesbadtable"
+		}
+	}
+}

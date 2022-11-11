@@ -14,6 +14,10 @@
 			],
 			"sinks": [
 				{
+					"dataset": {
+						"referenceName": "AzureSqlTablebadtable",
+						"type": "DatasetReference"
+					},
 					"name": "sink1"
 				}
 			],
@@ -36,8 +40,20 @@
 				"     disjoint: false) ~> conditionalsplit1@(ErrorRows, GoodRows)",
 				"conditionalsplit1@ErrorRows sink(allowSchemaDrift: true,",
 				"     validateSchema: false,",
+				"     input(",
+				"          saleDate as string,",
+				"          salesItem as string,",
+				"          country as string,",
+				"          quantity as string",
+				"     ),",
+				"     deletable:false,",
+				"     insertable:true,",
+				"     updateable:false,",
+				"     upsertable:false,",
+				"     format: 'table',",
 				"     skipDuplicateMapInputs: true,",
-				"     skipDuplicateMapOutputs: true) ~> sink1"
+				"     skipDuplicateMapOutputs: true,",
+				"     errorHandlingOption: 'stopOnFirstError') ~> sink1"
 			]
 		}
 	}

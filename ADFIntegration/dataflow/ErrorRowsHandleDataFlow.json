@@ -12,8 +12,16 @@
 					"name": "SalesIndia"
 				}
 			],
-			"sinks": [],
-			"transformations": [],
+			"sinks": [
+				{
+					"name": "sink1"
+				}
+			],
+			"transformations": [
+				{
+					"name": "conditionalsplit1"
+				}
+			],
 			"scriptLines": [
 				"source(output(",
 				"          saleDate as string,",
@@ -23,7 +31,13 @@
 				"     ),",
 				"     allowSchemaDrift: true,",
 				"     validateSchema: false,",
-				"     ignoreNoFilesFound: false) ~> SalesIndia"
+				"     ignoreNoFilesFound: false) ~> SalesIndia",
+				"SalesIndia split(isNull(toDate(saleDate, 'dd-MMM-yy')),",
+				"     disjoint: false) ~> conditionalsplit1@(ErrorRows, GoodRows)",
+				"conditionalsplit1@ErrorRows sink(allowSchemaDrift: true,",
+				"     validateSchema: false,",
+				"     skipDuplicateMapInputs: true,",
+				"     skipDuplicateMapOutputs: true) ~> sink1"
 			]
 		}
 	}

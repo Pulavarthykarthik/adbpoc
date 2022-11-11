@@ -24,6 +24,9 @@
 			"transformations": [
 				{
 					"name": "conditionalsplit1"
+				},
+				{
+					"name": "filenamecolumnforerrorrows"
 				}
 			],
 			"scriptLines": [
@@ -38,7 +41,8 @@
 				"     ignoreNoFilesFound: false) ~> SalesIndia",
 				"SalesIndia split(isNull(toDate(saleDate, 'dd-MMM-yy')),",
 				"     disjoint: false) ~> conditionalsplit1@(ErrorRows, GoodRows)",
-				"conditionalsplit1@ErrorRows sink(allowSchemaDrift: true,",
+				"conditionalsplit1@ErrorRows derive(salesfilename = 'indiasalesbad.csv') ~> filenamecolumnforerrorrows",
+				"filenamecolumnforerrorrows sink(allowSchemaDrift: true,",
 				"     validateSchema: false,",
 				"     input(",
 				"          saleDate as string,",

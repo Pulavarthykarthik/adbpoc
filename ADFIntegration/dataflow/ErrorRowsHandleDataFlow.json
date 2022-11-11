@@ -15,7 +15,7 @@
 			"sinks": [
 				{
 					"dataset": {
-						"referenceName": "AzureSqlTablebadtable",
+						"referenceName": "AzureSqlTablebadsales",
 						"type": "DatasetReference"
 					},
 					"name": "sink1"
@@ -44,7 +44,8 @@
 				"          saleDate as string,",
 				"          salesItem as string,",
 				"          country as string,",
-				"          quantity as string",
+				"          quantity as string,",
+				"          salesfilename as string",
 				"     ),",
 				"     deletable:false,",
 				"     insertable:true,",

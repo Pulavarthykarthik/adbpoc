@@ -1,0 +1,17 @@
+{
+	"name": "AzureBlobStoragesalesindia",
+	"properties": {
+		"annotations": [],
+		"type": "AzureBlobStorage",
+		"typeProperties": {
+			"connectionString": {
+				"type": "AzureKeyVaultSecret",
+				"store": {
+					"referenceName": "AzureKeyVaultsalesindia",
+					"type": "LinkedServiceReference"
+				},
+				"secretName": "mbusaadfdevsecret"
+			}
+		}
+	}
+}

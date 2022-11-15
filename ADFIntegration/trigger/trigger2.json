@@ -1,12 +1,12 @@
 {
-	"name": "trigger1",
+	"name": "trigger2",
 	"properties": {
 		"annotations": [],
 		"runtimeState": "Started",
 		"pipelines": [
 			{
 				"pipelineReference": {
-					"referenceName": "pipeline1",
+					"referenceName": "demoerrorowspipeline-3",
 					"type": "PipelineReference"
 				}
 			}
@@ -14,9 +14,9 @@
 		"type": "ScheduleTrigger",
 		"typeProperties": {
 			"recurrence": {
-				"frequency": "Minute",
-				"interval": 15,
-				"startTime": "2022-11-09T11:59:00Z",
+				"frequency": "Hour",
+				"interval": 1,
+				"startTime": "2022-11-11T12:53:00Z",
 				"timeZone": "UTC"
 			}
 		}

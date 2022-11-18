@@ -230,6 +230,14 @@ stages:
                   displayName: Replace Managed Identity to System Assigned
           #stop trigger
                 - task: AzurePowerShell@5
+                  inputs:
+                    azureSubscription: 'dep-service-connection'
+                    ScriptType: 'InlineScript'
+                    Inline: 'Uninstall-AzureRm'
+                    azurePowerShellVersion: 'LatestVersion'
+                    workingDirectory: $(System.DefaultWorkingDirectory)/$(TargetFolder)
+                    pwsh: true
+                - task: AzurePowerShell@5
                   displayName: Stop Trigger
                   inputs:
                     pwsh: true 

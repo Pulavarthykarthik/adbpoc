@@ -236,7 +236,7 @@ stages:
                     Inline: 'Uninstall-AzureRm'
                     azurePowerShellVersion: 'LatestVersion'
                     workingDirectory: $(System.DefaultWorkingDirectory)/$(TargetFolder)
-                    pwsh: true
+                    
                 - task: AzurePowerShell@5
                   displayName: Stop Trigger
                   inputs:

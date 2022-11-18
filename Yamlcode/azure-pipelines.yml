@@ -336,7 +336,8 @@ stages:
           #stop trigger
                 - task: AzurePowerShell@5
                   displayName: Stop Trigger
-                  inputs: 
+                  inputs:
+                    pwsh: true 
                     azureSubscription: $(myserviceconnection)
                     workingDirectory: $(System.DefaultWorkingDirectory)/$(TargetFolder)
                     ScriptPath: '$(System.DefaultWorkingDirectory)/$(TargetFolder)/PrePostDeploymentScript.ps1'
@@ -360,7 +361,8 @@ stages:
             #start Trigger
                 - task: AzurePowerShell@5
                   displayName: Start Trigger
-                  inputs: 
+                  inputs:
+                    pwsh: true 
                     azureSubscription: $(myserviceconnection)
                     workingDirectory: $(System.DefaultWorkingDirectory)/$(TargetFolder)
                     ScriptPath: '$(System.DefaultWorkingDirectory)/$(TargetFolder)/PrePostDeploymentScript.ps1'

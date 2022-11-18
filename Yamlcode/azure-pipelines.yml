@@ -273,7 +273,7 @@ stages:
                     workingDirectory: $(System.DefaultWorkingDirectory)/$(TargetFolder)
                     azurePowerShellVersion: 'LatestVersion'
                     ScriptPath: '$(System.DefaultWorkingDirectory)/$(TargetFolder)/PrePostDeploymentScript.ps1'
-                    ScriptArguments: -armTemplate "$(System.DefaultWorkingDirectory)/$(TargetFolder)/ARMTemplateForFactory.json" -ResourceGroupName $(resourcegroup_dev) -DataFactoryName $(adfname_dev) -predeployment $false -deleteDeployment $false
+                    ScriptArguments: -armTemplate "$(System.DefaultWorkingDirectory)/$(TargetFolder)/ARMTemplateForFactory.json" -ResourceGroupName $(resourcegroup_dev) -DataFactoryName $(adfname_dev) -predeployment $false -deleteDeployment $true
                    
 
   - stage:  Approve_Deployment_Prod

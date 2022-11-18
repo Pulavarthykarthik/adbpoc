@@ -1,22 +1,15 @@
 {
-	"name": "trigger1",
+	"name": "trigger4",
 	"properties": {
 		"annotations": [],
 		"runtimeState": "Stopped",
-		"pipelines": [
-			{
-				"pipelineReference": {
-					"referenceName": "pipeline1",
-					"type": "PipelineReference"
-				}
-			}
-		],
+		"pipelines": [],
 		"type": "ScheduleTrigger",
 		"typeProperties": {
 			"recurrence": {
 				"frequency": "Minute",
 				"interval": 15,
-				"startTime": "2022-11-09T11:59:00Z",
+				"startTime": "2022-11-18T13:08:00Z",
 				"timeZone": "UTC"
 			}
 		}

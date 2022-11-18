@@ -172,29 +172,31 @@ stages:
 
 #Dev Release Stage
 
-  - stage:  Approve_Deployment_Dev
-    displayName: Approval to Deploy to DEV Stage
-    dependsOn: Build_ADF_Dev
-    condition: succeeded('Build_ADF_Dev')
-    jobs:
-    - job: waitForValidation
-      displayName: Wait for external validation
-      pool: server
-      timeoutInMinutes: 4320 # job times out in 3 days
-      steps:
-        - task: ManualValidation@0
-          timeoutInMinutes: 4320 # task times out in 3 days
-          inputs:
-           notifyUsers: |
-            $(notifyUsers)
-           instructions: 'Please validate the DEV build configuration'
-           onTimeout: 'reject'
+  # - stage:  Approve_Deployment_Dev
+  #   displayName: Approval to Deploy to DEV Stage
+  #   dependsOn: Build_ADF_Dev
+  #   condition: succeeded('Build_ADF_Dev')
+  #   jobs:
+  #   - job: waitForValidation
+  #     displayName: Wait for external validation
+  #     pool: server
+  #     timeoutInMinutes: 4320 # job times out in 3 days
+  #     steps:
+  #       - task: ManualValidation@0
+  #         timeoutInMinutes: 4320 # task times out in 3 days
+  #         inputs:
+  #          notifyUsers: |
+  #           $(notifyUsers)
+  #          instructions: 'Please validate the DEV build configuration'
+  #          onTimeout: 'reject'
 
-
+#################
+#RELEASE STAGE
+#################
   - stage: ADF_DEV
     displayName: Deploying ADF in DEV
-    dependsOn: Approve_Deployment_Dev
-    condition: and(succeeded('Approve_Deployment_Dev'),succeeded('Build_ADF_Dev'))
+    dependsOn: Build_ADF_Dev
+    condition: succeeded('Build_ADF_Dev')
     jobs:
       - job: Deploytodev
         pool:
@@ -334,13 +336,13 @@ stages:
                   workingDirectory: $(System.DefaultWorkingDirectory)/$(TargetFolder)
                   displayName: Replace Managed Identity to System Assigned
           #stop trigger
-                # - task: AzurePowerShell@5
-                #   inputs:
-                #     azureSubscription: 'dep-service-connection'
-                #     ScriptType: 'InlineScript'
-                #     Inline: 'Uninstall-AzureRm'
-                #     azurePowerShellVersion: 'LatestVersion'
-                #     workingDirectory: $(System.DefaultWorkingDirectory)/$(TargetFolder)
+                - task: AzurePowerShell@5
+                  inputs:
+                    azureSubscription: 'dep-service-connection'
+                    ScriptType: 'InlineScript'
+                    Inline: 'Uninstall-AzureRm'
+                    azurePowerShellVersion: 'LatestVersion'
+                    workingDirectory: $(System.DefaultWorkingDirectory)/$(TargetFolder)
                 - task: AzurePowerShell@5
                   displayName: Stop Trigger
                   inputs:

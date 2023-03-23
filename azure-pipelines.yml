@@ -219,11 +219,11 @@ stages:
                   name: adfparameter
                   displayName: 'Download Parameters from secure files'
                   inputs:
-                    secureFile: ARMTemplateParametersForFactorydev.json
+                    secureFile: ARMTemplateParametersForFactoryqa.json
                 - pwsh: |
                     Copy-Item "$(adfParameter.secureFilePath)" -Destination "$(System.DefaultWorkingDirectory)/$(TargetFolder)"
                     Remove-Item ARMTemplateParametersForFactory.json
-                    Rename-Item -Path ARMTemplateParametersForFactorydev.json -NewName ARMTemplateParametersForFactory.json
+                    Rename-Item -Path ARMTemplateParametersForFactoryqa.json -NewName ARMTemplateParametersForFactory.json
                   workingDirectory: $(System.DefaultWorkingDirectory)/$(TargetFolder)
                   displayName: Replace ARM Template Parameters
                 - pwsh: |

@@ -3,7 +3,7 @@
 	"properties": {
 		"description": "This trigger is used to trigger the pipeline which transfers EQC lead files from domain to MBUSA data lake.",
 		"annotations": [],
-		"runtimeState": "Started",
+		"runtimeState": "Stopped",
 		"pipelines": [
 			{
 				"pipelineReference": {

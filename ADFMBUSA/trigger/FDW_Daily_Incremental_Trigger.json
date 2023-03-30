@@ -3,7 +3,7 @@
 	"properties": {
 		"description": "FDW pipeline running daily for incremental updates for 20 non static tables\nExcept Saturday",
 		"annotations": [],
-		"runtimeState": "Started",
+		"runtimeState": "Stopped",
 		"pipelines": [
 			{
 				"pipelineReference": {

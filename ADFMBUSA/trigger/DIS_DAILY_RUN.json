@@ -2,7 +2,7 @@
 	"name": "DIS_DAILY_RUN",
 	"properties": {
 		"annotations": [],
-		"runtimeState": "Stopped",
+		"runtimeState": "Started",
 		"pipelines": [
 			{
 				"pipelineReference": {

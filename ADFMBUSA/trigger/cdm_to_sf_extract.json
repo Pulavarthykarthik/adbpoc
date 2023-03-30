@@ -2,7 +2,7 @@
 	"name": "cdm_to_sf_extract",
 	"properties": {
 		"annotations": [],
-		"runtimeState": "Started",
+		"runtimeState": "Stopped",
 		"pipelines": [
 			{
 				"pipelineReference": {

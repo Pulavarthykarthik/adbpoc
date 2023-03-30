@@ -1,0 +1,19 @@
+{
+	"name": "Delete_OutputFolder_File",
+	"properties": {
+		"linkedServiceName": {
+			"referenceName": "LS_ADLS_XTOMSUSRSVEDWDEVADLS_v2",
+			"type": "LinkedServiceReference"
+		},
+		"annotations": [],
+		"type": "Binary",
+		"typeProperties": {
+			"location": {
+				"type": "AzureBlobFSLocation",
+				"folderPath": "gaurku/output",
+				"fileSystem": "data-engineering"
+			}
+		}
+	},
+	"type": "Microsoft.DataFactory/factories/datasets"
+}

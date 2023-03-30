@@ -1,0 +1,33 @@
+{
+	"name": "cdm_salesforce_data_source",
+	"properties": {
+		"linkedServiceName": {
+			"referenceName": "Gen2_Domain_ADLS",
+			"type": "LinkedServiceReference"
+		},
+		"parameters": {
+			"run_date": {
+				"type": "string"
+			}
+		},
+		"folder": {
+			"name": "WARRANTY|REMARKETTING"
+		},
+		"annotations": [],
+		"type": "Binary",
+		"typeProperties": {
+			"location": {
+				"type": "AzureBlobFSLocation",
+				"fileSystem": {
+					"value": "@{concat('customer-cdm/prod/data', '/year=',formatDateTime(adddays(dataset().run_date,-1),'yyyy'), '/month=',formatDateTime(adddays(dataset().run_date,-1),'MM'),'/day=',formatDateTime(adddays(dataset().run_date,-1),'dd'),'/')}",
+					"type": "Expression"
+				}
+			},
+			"compression": {
+				"type": "ZipDeflate",
+				"level": "Fastest"
+			}
+		}
+	},
+	"type": "Microsoft.DataFactory/factories/datasets"
+}

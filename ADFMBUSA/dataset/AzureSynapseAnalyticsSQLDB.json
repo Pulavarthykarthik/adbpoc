@@ -1,0 +1,16 @@
+{
+	"name": "AzureSynapseAnalyticsSQLDB",
+	"properties": {
+		"linkedServiceName": {
+			"referenceName": "AzureSqlDW2",
+			"type": "LinkedServiceReference"
+		},
+		"folder": {
+			"name": "ARAAS"
+		},
+		"annotations": [],
+		"type": "AzureSqlDWTable",
+		"schema": []
+	},
+	"type": "Microsoft.DataFactory/factories/datasets"
+}

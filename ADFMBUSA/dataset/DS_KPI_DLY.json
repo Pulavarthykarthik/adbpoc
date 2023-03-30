@@ -1,0 +1,43 @@
+{
+	"name": "DS_KPI_DLY",
+	"properties": {
+		"linkedServiceName": {
+			"referenceName": "LS_ADLS_XTOMSUSRSVEDWDEVADLS_v2",
+			"type": "LinkedServiceReference"
+		},
+		"annotations": [],
+		"type": "Json",
+		"typeProperties": {
+			"location": {
+				"type": "AzureBlobFSLocation",
+				"fileName": {
+					"value": "@if(equals(utcnow('dd'),'15'),'KPI_Config_15.json', 'KPI_Config.json')",
+					"type": "Expression"
+				},
+				"folderPath": "StagingFiles",
+				"fileSystem": "adls-dpg"
+			}
+		},
+		"schema": {
+			"type": "object",
+			"properties": {
+				"Source_file": {
+					"type": "string"
+				},
+				"Target_table": {
+					"type": "string"
+				},
+				"notebook_path": {
+					"type": "string"
+				},
+				"schema": {
+					"type": "string"
+				},
+				"container": {
+					"type": "string"
+				}
+			}
+		}
+	},
+	"type": "Microsoft.DataFactory/factories/datasets"
+}

@@ -1,0 +1,33 @@
+{
+	"name": "vista_cvp_config",
+	"properties": {
+		"linkedServiceName": {
+			"referenceName": "LS_ADLS_XTOMSUSRSVEDWDEVADLS_v2",
+			"type": "LinkedServiceReference"
+		},
+		"folder": {
+			"name": "DIS"
+		},
+		"annotations": [],
+		"type": "Json",
+		"typeProperties": {
+			"location": {
+				"type": "AzureBlobFSLocation",
+				"folderPath": "cvp/pipeline-table-config",
+				"fileSystem": "data-engineering"
+			}
+		},
+		"schema": {
+			"type": "object",
+			"properties": {
+				"table": {
+					"type": "string"
+				},
+				"pipeline": {
+					"type": "string"
+				}
+			}
+		}
+	},
+	"type": "Microsoft.DataFactory/factories/datasets"
+}

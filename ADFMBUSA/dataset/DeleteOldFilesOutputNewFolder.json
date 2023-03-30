@@ -1,0 +1,19 @@
+{
+	"name": "DeleteOldFilesOutputNewFolder",
+	"properties": {
+		"linkedServiceName": {
+			"referenceName": "LS_ADLS_XTOMSUSRSVEDWDEVADLS_v2",
+			"type": "LinkedServiceReference"
+		},
+		"annotations": [],
+		"type": "Binary",
+		"typeProperties": {
+			"location": {
+				"type": "AzureBlobFSLocation",
+				"folderPath": "gaurku/output_new",
+				"fileSystem": "data-engineering"
+			}
+		}
+	},
+	"type": "Microsoft.DataFactory/factories/datasets"
+}

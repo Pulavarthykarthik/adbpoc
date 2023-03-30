@@ -1,0 +1,13 @@
+{
+	"name": "AzureSynapseAnalyticsTable5",
+	"properties": {
+		"linkedServiceName": {
+			"referenceName": "AzureSQLDW_AR",
+			"type": "LinkedServiceReference"
+		},
+		"annotations": [],
+		"type": "AzureSqlDWTable",
+		"schema": []
+	},
+	"type": "Microsoft.DataFactory/factories/datasets"
+}

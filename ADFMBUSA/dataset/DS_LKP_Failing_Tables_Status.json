@@ -1,0 +1,58 @@
+{
+	"name": "DS_LKP_Failing_Tables_Status",
+	"properties": {
+		"linkedServiceName": {
+			"referenceName": "AzureSqlDW2",
+			"type": "LinkedServiceReference"
+		},
+		"annotations": [],
+		"type": "AzureSqlDWTable",
+		"schema": [
+			{
+				"name": "ADW_SCHEMA",
+				"type": "varchar"
+			},
+			{
+				"name": "ADW_TABLE",
+				"type": "varchar"
+			},
+			{
+				"name": "DATA_EXECUTED_FOR_DT",
+				"type": "datetime",
+				"precision": 23,
+				"scale": 3
+			},
+			{
+				"name": "DW_UPDT_BY",
+				"type": "varchar"
+			},
+			{
+				"name": "DW_UPDT_DT",
+				"type": "datetime",
+				"precision": 23,
+				"scale": 3
+			},
+			{
+				"name": "ERROR",
+				"type": "varchar"
+			},
+			{
+				"name": "EXECUTION_STATUS",
+				"type": "varchar"
+			},
+			{
+				"name": "PIPELINE_NAME",
+				"type": "varchar"
+			},
+			{
+				"name": "PIPELINE_RUN_ID",
+				"type": "varchar"
+			}
+		],
+		"typeProperties": {
+			"schema": "ADW_Dealer_EDW",
+			"table": "KPI_FAILED_Files_STATUS"
+		}
+	},
+	"type": "Microsoft.DataFactory/factories/datasets"
+}

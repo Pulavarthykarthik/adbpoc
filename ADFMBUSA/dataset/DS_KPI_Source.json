@@ -1,0 +1,20 @@
+{
+	"name": "DS_KPI_Source",
+	"properties": {
+		"linkedServiceName": {
+			"referenceName": "LS_ADLS_XTOMSUSRSVEDWDEVADLS_v2",
+			"type": "LinkedServiceReference"
+		},
+		"annotations": [],
+		"type": "Parquet",
+		"typeProperties": {
+			"location": {
+				"type": "AzureBlobFSLocation",
+				"fileSystem": "adls-dpg"
+			},
+			"compressionCodec": "snappy"
+		},
+		"schema": []
+	},
+	"type": "Microsoft.DataFactory/factories/datasets"
+}

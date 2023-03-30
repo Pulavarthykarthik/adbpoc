@@ -1,0 +1,24 @@
+{
+	"name": "nbo_subscriptions_file_dest_copy",
+	"properties": {
+		"linkedServiceName": {
+			"referenceName": "LS_ADLS_XTOMSUSRSVEDWDEVADLS_v2",
+			"type": "LinkedServiceReference"
+		},
+		"folder": {
+			"name": "SALESFORCE"
+		},
+		"annotations": [],
+		"type": "Binary",
+		"typeProperties": {
+			"location": {
+				"type": "AzureBlobFSLocation",
+				"fileSystem": {
+					"value": "@{concat('adls-salesforce/subscriptions/raw', '/year=',formatDateTime(adddays(utcnow(),0),'yyyy'), '/month=',formatDateTime(adddays(utcnow(),0),'MM'),'/day=',formatDateTime(adddays(utcnow(),0),'dd'),'/')}",
+					"type": "Expression"
+				}
+			}
+		}
+	},
+	"type": "Microsoft.DataFactory/factories/datasets"
+}

@@ -13,7 +13,7 @@ trigger:
 variables:
 - group: mbusa-adf
 - name: isDev
-  value: $[eq(variables['Build.SourceBranch'], 'refs/heads/develop')]
+  value: $[eq(variables['Build.SourceBranch'], 'refs/heads/develop_test')]
 - name: isMain
   value: $[eq(variables['Build.SourceBranch'], 'refs/heads/main')]
   

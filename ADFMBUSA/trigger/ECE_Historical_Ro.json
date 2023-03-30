@@ -3,7 +3,7 @@
 	"properties": {
 		"description": "ECE Historical RO to be run everyday at 9:00 Hours EST",
 		"annotations": [],
-		"runtimeState": "Stopped",
+		"runtimeState": "Started",
 		"pipelines": [
 			{
 				"pipelineReference": {

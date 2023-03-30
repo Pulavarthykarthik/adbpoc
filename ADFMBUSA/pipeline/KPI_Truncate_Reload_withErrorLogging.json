@@ -1,0 +1,1071 @@
+{
+	"name": "KPI_Truncate_Reload_withErrorLogging",
+	"properties": {
+		"activities": [
+			{
+				"name": "Read JSON File",
+				"description": "This will read the JSON files from the adls-kpi-edw folder.",
+				"type": "Lookup",
+				"dependsOn": [
+					{
+						"activity": "Executing KPI notebook for file generation",
+						"dependencyConditions": [
+							"Succeeded"
+						]
+					}
+				],
+				"policy": {
+					"timeout": "0.12:00:00",
+					"retry": 0,
+					"retryIntervalInSeconds": 30,
+					"secureOutput": false,
+					"secureInput": false
+				},
+				"userProperties": [],
+				"typeProperties": {
+					"source": {
+						"type": "JsonSource",
+						"storeSettings": {
+							"type": "AzureBlobFSReadSettings",
+							"recursive": true,
+							"enablePartitionDiscovery": false
+						},
+						"formatSettings": {
+							"type": "JsonReadSettings"
+						}
+					},
+					"dataset": {
+						"referenceName": "DS_KPI_DLY",
+						"type": "DatasetReference"
+					},
+					"firstRowOnly": false
+				}
+			},
+			{
+				"name": "Iterating elements of json",
+				"type": "ForEach",
+				"dependsOn": [
+					{
+						"activity": "Read JSON File",
+						"dependencyConditions": [
+							"Succeeded"
+						]
+					}
+				],
+				"userProperties": [],
+				"typeProperties": {
+					"items": {
+						"value": "@activity('Read JSON File').output.value",
+						"type": "Expression"
+					},
+					"activities": [
+						{
+							"name": "If Condition",
+							"type": "IfCondition",
+							"dependsOn": [
+								{
+									"activity": "Get Metadata to get file",
+									"dependencyConditions": [
+										"Succeeded"
+									]
+								}
+							],
+							"userProperties": [],
+							"typeProperties": {
+								"expression": {
+									"value": "@equals(activity('Get Metadata to get file').output.exists,true)",
+									"type": "Expression"
+								},
+								"ifFalseActivities": [
+									{
+										"name": "Fail pipeline execution_NoFile",
+										"type": "Fail",
+										"dependsOn": [
+											{
+												"activity": "SP_Update_KPI_Failed_Status_NoFile",
+												"dependencyConditions": [
+													"Succeeded"
+												]
+											}
+										],
+										"userProperties": [],
+										"typeProperties": {
+											"message": {
+												"value": "@concat('Input Files Missing:',item().Source_file)",
+												"type": "Expression"
+											},
+											"errorCode": "XXX"
+										}
+									},
+									{
+										"name": "SP_Update_KPI_Failed_Status_NoFile",
+										"type": "SqlServerStoredProcedure",
+										"dependsOn": [],
+										"policy": {
+											"timeout": "0.12:00:00",
+											"retry": 0,
+											"retryIntervalInSeconds": 30,
+											"secureOutput": false,
+											"secureInput": false
+										},
+										"userProperties": [],
+										"typeProperties": {
+											"storedProcedureName": "[ADW_Dealer_EDW].[SP_Update_KPI_Failed_Status]",
+											"storedProcedureParameters": {
+												"DES_EXEC_STAT": {
+													"value": "Failed",
+													"type": "String"
+												},
+												"DTE_DAT_EXEC_FOR": {
+													"value": {
+														"value": "@utcnow()",
+														"type": "Expression"
+													},
+													"type": "DateTime"
+												},
+												"DTS_DW_CREA": {
+													"value": {
+														"value": "@utcnow()",
+														"type": "Expression"
+													},
+													"type": "DateTime"
+												},
+												"DTS_DW_UPDT": {
+													"value": {
+														"value": "@utcnow()",
+														"type": "Expression"
+													},
+													"type": "DateTime"
+												},
+												"ID_DW_CREA_USER": {
+													"value": "ADF",
+													"type": "String"
+												},
+												"ID_DW_UPDT_USER": {
+													"value": "ADF",
+													"type": "String"
+												},
+												"ID_PPLN_RUN": {
+													"value": {
+														"value": "@pipeline().RunId",
+														"type": "Expression"
+													},
+													"type": "String"
+												},
+												"NAM_ADW_SCHMA": {
+													"value": "ADW_Dealer_EDW",
+													"type": "String"
+												},
+												"NAM_ADW_TBL": {
+													"value": {
+														"value": "@pipeline().parameters.Source_File",
+														"type": "Expression"
+													},
+													"type": "String"
+												},
+												"NAM_PPLN": {
+													"value": {
+														"value": "@pipeline().Pipeline",
+														"type": "Expression"
+													},
+													"type": "String"
+												},
+												"TXT_EXEC_REAS": {
+													"value": {
+														"value": "@concat('Input File Missing: ',item().Source_file)",
+														"type": "Expression"
+													},
+													"type": "String"
+												}
+											}
+										},
+										"linkedServiceName": {
+											"referenceName": "AzureSqlDW2",
+											"type": "LinkedServiceReference"
+										}
+									}
+								],
+								"ifTrueActivities": [
+									{
+										"name": "Copy datafrom processed folder to ADW",
+										"type": "Copy",
+										"dependsOn": [],
+										"policy": {
+											"timeout": "0.12:00:00",
+											"retry": 0,
+											"retryIntervalInSeconds": 30,
+											"secureOutput": false,
+											"secureInput": false
+										},
+										"userProperties": [],
+										"typeProperties": {
+											"source": {
+												"type": "ParquetSource",
+												"additionalColumns": [
+													{
+														"name": "DTS_DW_UPDT",
+														"value": {
+															"value": "@utcnow()",
+															"type": "Expression"
+														}
+													},
+													{
+														"name": "ID_DW_UPDT_USER",
+														"value": {
+															"value": "'ADF'",
+															"type": "Expression"
+														}
+													},
+													{
+														"name": "ID_DW_CREA_USER",
+														"value": {
+															"value": "'ADF'",
+															"type": "Expression"
+														}
+													},
+													{
+														"name": "DTS_DW_CREA",
+														"value": {
+															"value": "@utcNow()",
+															"type": "Expression"
+														}
+													}
+												],
+												"storeSettings": {
+													"type": "AzureBlobFSReadSettings",
+													"recursive": true,
+													"wildcardFolderPath": {
+														"value": "@concat('/Processed/',item().Source_file,'/year=',utcNow('yyyy'),'/month=',utcNow('MM'),'/day=',utcNow('dd'))",
+														"type": "Expression"
+													},
+													"wildcardFileName": "*.parquet",
+													"enablePartitionDiscovery": false
+												}
+											},
+											"sink": {
+												"type": "SqlDWSink",
+												"preCopyScript": {
+													"value": "@{concat('Delete from ',item().schema,'.',item().Target_table,' where NAM_KPI IN',item().kpi,'AND CDE_FRAN_TYP IN ',item().FileType)}",
+													"type": "Expression"
+												},
+												"writeBehavior": "Insert",
+												"disableMetricsCollection": false
+											},
+											"enableStaging": false,
+											"translator": {
+												"type": "TabularTranslator",
+												"mappings": [
+													{
+														"source": {
+															"name": "dealer_id",
+															"type": "String"
+														},
+														"sink": {
+															"name": "ID_DLR",
+															"type": "String"
+														}
+													},
+													{
+														"source": {
+															"name": "KPI",
+															"type": "String"
+														},
+														"sink": {
+															"name": "NAM_KPI",
+															"type": "String"
+														}
+													},
+													{
+														"source": {
+															"name": "DATA_DATE",
+															"type": "DateTime"
+														},
+														"sink": {
+															"name": "DTE_DAT",
+															"type": "DateTime"
+														}
+													},
+													{
+														"source": {
+															"name": "KPI_VAL_1",
+															"type": "Decimal"
+														},
+														"sink": {
+															"name": "NUM_KPI_VAL_1",
+															"type": "Decimal"
+														}
+													},
+													{
+														"source": {
+															"name": "KPI_VAL_2",
+															"type": "Decimal"
+														},
+														"sink": {
+															"name": "NUM_KPI_VAL_2",
+															"type": "Decimal"
+														}
+													},
+													{
+														"source": {
+															"name": "KPI_OBJ",
+															"type": "Decimal"
+														},
+														"sink": {
+															"name": "NUM_KPI_OBJ",
+															"type": "Decimal"
+														}
+													},
+													{
+														"source": {
+															"name": "MONTH",
+															"type": "DateTime"
+														},
+														"sink": {
+															"name": "DTE_KPI_AS_OF",
+															"type": "DateTime"
+														}
+													},
+													{
+														"source": {
+															"name": "DTS_DW_CREA"
+														},
+														"sink": {
+															"name": "DTS_DW_CREA",
+															"type": "DateTime"
+														}
+													},
+													{
+														"source": {
+															"name": "ID_DW_CREA_USER"
+														},
+														"sink": {
+															"name": "ID_DW_CREA_USER",
+															"type": "String"
+														}
+													},
+													{
+														"source": {
+															"name": "DTS_DW_UPDT"
+														},
+														"sink": {
+															"name": "DTS_DW_UPDT",
+															"type": "DateTime"
+														}
+													},
+													{
+														"source": {
+															"name": "ID_DW_UPDT_USER"
+														},
+														"sink": {
+															"name": "ID_DW_UPDT_USER",
+															"type": "String"
+														}
+													},
+													{
+														"source": {
+															"name": "IND_FRANCHISE",
+															"type": "String"
+														},
+														"sink": {
+															"name": "CDE_FRAN_TYP",
+															"type": "String"
+														}
+													}
+												]
+											}
+										},
+										"inputs": [
+											{
+												"referenceName": "DS_KPI_Source",
+												"type": "DatasetReference"
+											}
+										],
+										"outputs": [
+											{
+												"referenceName": "DS_ADW_DLR_EDW_STG",
+												"type": "DatasetReference",
+												"parameters": {
+													"SchemaName": {
+														"value": "@item().schema",
+														"type": "Expression"
+													},
+													"TableName": {
+														"value": "@item().Target_table",
+														"type": "Expression"
+													}
+												}
+											}
+										]
+									},
+									{
+										"name": "Fail pipeline execution_LoadActivity",
+										"type": "Fail",
+										"dependsOn": [
+											{
+												"activity": "SP_Update_KPI_Failed_Status_LoadActivity",
+												"dependencyConditions": [
+													"Succeeded"
+												]
+											}
+										],
+										"userProperties": [],
+										"typeProperties": {
+											"message": "Issue with target load process",
+											"errorCode": "XXX"
+										}
+									},
+									{
+										"name": "SP_Update_KPI_Failed_Status_LoadActivity",
+										"type": "SqlServerStoredProcedure",
+										"dependsOn": [
+											{
+												"activity": "Copy datafrom processed folder to ADW",
+												"dependencyConditions": [
+													"Failed"
+												]
+											}
+										],
+										"policy": {
+											"timeout": "0.12:00:00",
+											"retry": 0,
+											"retryIntervalInSeconds": 30,
+											"secureOutput": false,
+											"secureInput": false
+										},
+										"userProperties": [],
+										"typeProperties": {
+											"storedProcedureName": "[ADW_Dealer_EDW].[SP_Update_KPI_Failed_Status]",
+											"storedProcedureParameters": {
+												"DES_EXEC_STAT": {
+													"value": "Failed",
+													"type": "String"
+												},
+												"DTE_DAT_EXEC_FOR": {
+													"value": {
+														"value": "@utcnow()",
+														"type": "Expression"
+													},
+													"type": "DateTime"
+												},
+												"DTS_DW_CREA": {
+													"value": {
+														"value": "@utcnow()",
+														"type": "Expression"
+													},
+													"type": "DateTime"
+												},
+												"DTS_DW_UPDT": {
+													"value": {
+														"value": "@utcnow()",
+														"type": "Expression"
+													},
+													"type": "DateTime"
+												},
+												"ID_DW_CREA_USER": {
+													"value": "ADF",
+													"type": "String"
+												},
+												"ID_DW_UPDT_USER": {
+													"value": "ADF",
+													"type": "String"
+												},
+												"ID_PPLN_RUN": {
+													"value": {
+														"value": "@pipeline().RunId",
+														"type": "Expression"
+													},
+													"type": "String"
+												},
+												"NAM_ADW_SCHMA": {
+													"value": "ADW_Dealer_EDW",
+													"type": "String"
+												},
+												"NAM_ADW_TBL": {
+													"value": {
+														"value": "@pipeline().parameters.Source_File",
+														"type": "Expression"
+													},
+													"type": "String"
+												},
+												"NAM_PPLN": {
+													"value": {
+														"value": "@pipeline().Pipeline",
+														"type": "Expression"
+													},
+													"type": "String"
+												},
+												"TXT_EXEC_REAS": {
+													"value": {
+														"value": "Target table load process failed",
+														"type": "Expression"
+													},
+													"type": "String"
+												}
+											}
+										},
+										"linkedServiceName": {
+											"referenceName": "AzureSqlDW2",
+											"type": "LinkedServiceReference"
+										}
+									}
+								]
+							}
+						},
+						{
+							"name": "Get Metadata to get file",
+							"type": "GetMetadata",
+							"dependsOn": [],
+							"policy": {
+								"timeout": "0.12:00:00",
+								"retry": 0,
+								"retryIntervalInSeconds": 30,
+								"secureOutput": false,
+								"secureInput": false
+							},
+							"userProperties": [],
+							"typeProperties": {
+								"dataset": {
+									"referenceName": "DS_KPI_FIleNames",
+									"type": "DatasetReference",
+									"parameters": {
+										"FolderName": {
+											"value": "@item().Source_file",
+											"type": "Expression"
+										}
+									}
+								},
+								"fieldList": [
+									"exists"
+								],
+								"storeSettings": {
+									"type": "AzureBlobFSReadSettings",
+									"recursive": true,
+									"enablePartitionDiscovery": false
+								},
+								"formatSettings": {
+									"type": "JsonReadSettings"
+								}
+							}
+						},
+						{
+							"name": "SP_Update_KPI_Failed_Status_GMD",
+							"type": "SqlServerStoredProcedure",
+							"dependsOn": [
+								{
+									"activity": "Get Metadata to get file",
+									"dependencyConditions": [
+										"Failed"
+									]
+								}
+							],
+							"policy": {
+								"timeout": "0.12:00:00",
+								"retry": 0,
+								"retryIntervalInSeconds": 30,
+								"secureOutput": false,
+								"secureInput": false
+							},
+							"userProperties": [],
+							"typeProperties": {
+								"storedProcedureName": "[ADW_Dealer_EDW].[SP_Update_KPI_Failed_Status]",
+								"storedProcedureParameters": {
+									"ADW_SCHEMA": {
+										"value": "ADW_Dealer_EDW",
+										"type": "String"
+									},
+									"ADW_TABLE": {
+										"value": {
+											"value": "@item().Source_file",
+											"type": "Expression"
+										},
+										"type": "String"
+									},
+									"DATA_EXECUTED_FOR_DT": {
+										"value": {
+											"value": "@utcNow()",
+											"type": "Expression"
+										},
+										"type": "Datetime"
+									},
+									"DW_UPDT_BY": {
+										"value": null,
+										"type": "String"
+									},
+									"DW_UPDT_DT": {
+										"value": null,
+										"type": "Datetime"
+									},
+									"ERROR": {
+										"value": {
+											"value": "Issue with Get Metadata activity",
+											"type": "Expression"
+										},
+										"type": "String"
+									},
+									"EXECUTION_STATUS": {
+										"value": "Failed",
+										"type": "String"
+									},
+									"PIPELINE_NAME": {
+										"value": {
+											"value": "@pipeline().Pipeline",
+											"type": "Expression"
+										},
+										"type": "String"
+									},
+									"PIPELINE_RUN_ID": {
+										"value": {
+											"value": "@pipeline().RunId",
+											"type": "Expression"
+										},
+										"type": "String"
+									}
+								}
+							},
+							"linkedServiceName": {
+								"referenceName": "AzureSqlDW2",
+								"type": "LinkedServiceReference"
+							}
+						},
+						{
+							"name": "Fail pipeline execution_GMD",
+							"type": "Fail",
+							"dependsOn": [
+								{
+									"activity": "SP_Update_KPI_Failed_Status_GMD",
+									"dependencyConditions": [
+										"Succeeded"
+									]
+								}
+							],
+							"userProperties": [],
+							"typeProperties": {
+								"message": "Issue with target load process",
+								"errorCode": "XXX"
+							}
+						}
+					]
+				}
+			},
+			{
+				"name": "Executing KPI notebook for file generation",
+				"type": "DatabricksNotebook",
+				"dependsOn": [],
+				"policy": {
+					"timeout": "0.12:00:00",
+					"retry": 0,
+					"retryIntervalInSeconds": 30,
+					"secureOutput": false,
+					"secureInput": false
+				},
+				"userProperties": [],
+				"typeProperties": {
+					"notebookPath": {
+						"value": "@pipeline().parameters.notebook_path",
+						"type": "Expression"
+					},
+					"baseParameters": {
+						"File": {
+							"value": "@pipeline().parameters.Source_File",
+							"type": "Expression"
+						}
+					}
+				},
+				"linkedServiceName": {
+					"referenceName": "MBUSA_DEV",
+					"type": "LinkedServiceReference"
+				}
+			},
+			{
+				"name": "SP_Update_KPI_Failed_Status_NB",
+				"type": "SqlServerStoredProcedure",
+				"dependsOn": [
+					{
+						"activity": "Executing KPI notebook for file generation",
+						"dependencyConditions": [
+							"Failed"
+						]
+					}
+				],
+				"policy": {
+					"timeout": "0.12:00:00",
+					"retry": 0,
+					"retryIntervalInSeconds": 30,
+					"secureOutput": false,
+					"secureInput": false
+				},
+				"userProperties": [],
+				"typeProperties": {
+					"storedProcedureName": "[ADW_Dealer_EDW].[SP_Update_KPI_Failed_Status]",
+					"storedProcedureParameters": {
+						"DES_EXEC_STAT": {
+							"value": "Failed",
+							"type": "String"
+						},
+						"DTE_DAT_EXEC_FOR": {
+							"value": {
+								"value": "@utcnow()",
+								"type": "Expression"
+							},
+							"type": "DateTime"
+						},
+						"DTS_DW_CREA": {
+							"value": {
+								"value": "@utcnow()",
+								"type": "Expression"
+							},
+							"type": "DateTime"
+						},
+						"DTS_DW_UPDT": {
+							"value": {
+								"value": "@utcnow()",
+								"type": "Expression"
+							},
+							"type": "DateTime"
+						},
+						"ID_DW_CREA_USER": {
+							"value": "ADF",
+							"type": "String"
+						},
+						"ID_DW_UPDT_USER": {
+							"value": "ADF",
+							"type": "String"
+						},
+						"ID_PPLN_RUN": {
+							"value": {
+								"value": "@pipeline().RunId",
+								"type": "Expression"
+							},
+							"type": "String"
+						},
+						"NAM_ADW_SCHMA": {
+							"value": "ADW_Dealer_EDW",
+							"type": "String"
+						},
+						"NAM_ADW_TBL": {
+							"value": {
+								"value": "@pipeline().parameters.Source_File",
+								"type": "Expression"
+							},
+							"type": "String"
+						},
+						"NAM_PPLN": {
+							"value": {
+								"value": "@pipeline().Pipeline",
+								"type": "Expression"
+							},
+							"type": "String"
+						},
+						"TXT_EXEC_REAS": {
+							"value": {
+								"value": "@concat('Notebook Activity failed with error: ',activity('Executing KPI notebook for file generation').output.runError)",
+								"type": "Expression"
+							},
+							"type": "String"
+						}
+					}
+				},
+				"linkedServiceName": {
+					"referenceName": "AzureSqlDW2",
+					"type": "LinkedServiceReference"
+				}
+			},
+			{
+				"name": "Fail pipeline execution",
+				"type": "Fail",
+				"dependsOn": [
+					{
+						"activity": "SP_Update_KPI_Failed_Status_NB",
+						"dependencyConditions": [
+							"Succeeded"
+						]
+					}
+				],
+				"userProperties": [],
+				"typeProperties": {
+					"message": "Issue with notebook activity",
+					"errorCode": "XXX"
+				}
+			},
+			{
+				"name": "Fail pipeline execution_JSON",
+				"type": "Fail",
+				"dependsOn": [
+					{
+						"activity": "SP_Update_KPI_Failed_Status_JSON",
+						"dependencyConditions": [
+							"Succeeded"
+						]
+					}
+				],
+				"userProperties": [],
+				"typeProperties": {
+					"message": "Issue with json file",
+					"errorCode": "XXX"
+				}
+			},
+			{
+				"name": "SP_Load_DPG_KPI_MTH_Table",
+				"description": "SP to Load_DPG_KPI_MTH from DPG_KPI_DLY table",
+				"type": "SqlServerStoredProcedure",
+				"dependsOn": [
+					{
+						"activity": "Iterating elements of json",
+						"dependencyConditions": [
+							"Completed"
+						]
+					}
+				],
+				"policy": {
+					"timeout": "0.12:00:00",
+					"retry": 0,
+					"retryIntervalInSeconds": 30,
+					"secureOutput": false,
+					"secureInput": false
+				},
+				"userProperties": [],
+				"typeProperties": {
+					"storedProcedureName": "[ADW_Dealer_EDW].[SP_DPG_KPI_MTH_AGGR]"
+				},
+				"linkedServiceName": {
+					"referenceName": "AzureSqlDW2",
+					"type": "LinkedServiceReference"
+				}
+			},
+			{
+				"name": "SP_Update_KPI_Failed_Status_JSON",
+				"type": "SqlServerStoredProcedure",
+				"dependsOn": [
+					{
+						"activity": "Read JSON File",
+						"dependencyConditions": [
+							"Failed"
+						]
+					}
+				],
+				"policy": {
+					"timeout": "0.12:00:00",
+					"retry": 0,
+					"retryIntervalInSeconds": 30,
+					"secureOutput": false,
+					"secureInput": false
+				},
+				"userProperties": [],
+				"typeProperties": {
+					"storedProcedureName": "[ADW_Dealer_EDW].[SP_Update_KPI_Failed_Status]",
+					"storedProcedureParameters": {
+						"DES_EXEC_STAT": {
+							"value": "Failed",
+							"type": "String"
+						},
+						"DTE_DAT_EXEC_FOR": {
+							"value": {
+								"value": "@utcnow()",
+								"type": "Expression"
+							},
+							"type": "DateTime"
+						},
+						"DTS_DW_CREA": {
+							"value": {
+								"value": "@utcnow()",
+								"type": "Expression"
+							},
+							"type": "DateTime"
+						},
+						"DTS_DW_UPDT": {
+							"value": {
+								"value": "@utcnow()",
+								"type": "Expression"
+							},
+							"type": "DateTime"
+						},
+						"ID_DW_CREA_USER": {
+							"value": "ADF",
+							"type": "String"
+						},
+						"ID_DW_UPDT_USER": {
+							"value": "ADF",
+							"type": "String"
+						},
+						"ID_PPLN_RUN": {
+							"value": {
+								"value": "@pipeline().RunId",
+								"type": "Expression"
+							},
+							"type": "String"
+						},
+						"NAM_ADW_SCHMA": {
+							"value": "ADW_Dealer_EDW",
+							"type": "String"
+						},
+						"NAM_ADW_TBL": {
+							"value": {
+								"value": "@pipeline().parameters.Source_File",
+								"type": "Expression"
+							},
+							"type": "String"
+						},
+						"NAM_PPLN": {
+							"value": {
+								"value": "@pipeline().Pipeline",
+								"type": "Expression"
+							},
+							"type": "String"
+						},
+						"TXT_EXEC_REAS": {
+							"value": {
+								"value": "Issue while reading data from json file",
+								"type": "Expression"
+							},
+							"type": "String"
+						}
+					}
+				},
+				"linkedServiceName": {
+					"referenceName": "AzureSqlDW2",
+					"type": "LinkedServiceReference"
+				}
+			},
+			{
+				"name": "Fail pipeline execution1_SP",
+				"type": "Fail",
+				"dependsOn": [
+					{
+						"activity": "SP_Update_KPI_Failed_Status_SP",
+						"dependencyConditions": [
+							"Succeeded"
+						]
+					}
+				],
+				"userProperties": [],
+				"typeProperties": {
+					"message": "Issue with Rollup Stored Procedure",
+					"errorCode": "XXX"
+				}
+			},
+			{
+				"name": "SP_Update_KPI_Failed_Status_SP",
+				"type": "SqlServerStoredProcedure",
+				"dependsOn": [
+					{
+						"activity": "SP_Load_DPG_KPI_MTH_Table",
+						"dependencyConditions": [
+							"Failed"
+						]
+					}
+				],
+				"policy": {
+					"timeout": "0.12:00:00",
+					"retry": 0,
+					"retryIntervalInSeconds": 30,
+					"secureOutput": false,
+					"secureInput": false
+				},
+				"userProperties": [],
+				"typeProperties": {
+					"storedProcedureName": "[ADW_Dealer_EDW].[SP_Update_KPI_Failed_Status]",
+					"storedProcedureParameters": {
+						"DES_EXEC_STAT": {
+							"value": "Failed",
+							"type": "String"
+						},
+						"DTE_DAT_EXEC_FOR": {
+							"value": {
+								"value": "@utcnow()",
+								"type": "Expression"
+							},
+							"type": "DateTime"
+						},
+						"DTS_DW_CREA": {
+							"value": {
+								"value": "@utcnow()",
+								"type": "Expression"
+							},
+							"type": "DateTime"
+						},
+						"DTS_DW_UPDT": {
+							"value": {
+								"value": "@utcnow()",
+								"type": "Expression"
+							},
+							"type": "DateTime"
+						},
+						"ID_DW_CREA_USER": {
+							"value": "ADF",
+							"type": "String"
+						},
+						"ID_DW_UPDT_USER": {
+							"value": "ADF",
+							"type": "String"
+						},
+						"ID_PPLN_RUN": {
+							"value": {
+								"value": "@pipeline().RunId",
+								"type": "Expression"
+							},
+							"type": "String"
+						},
+						"NAM_ADW_SCHMA": {
+							"value": "ADW_Dealer_EDW",
+							"type": "String"
+						},
+						"NAM_ADW_TBL": {
+							"value": {
+								"value": "@pipeline().parameters.Source_File",
+								"type": "Expression"
+							},
+							"type": "String"
+						},
+						"NAM_PPLN": {
+							"value": {
+								"value": "@pipeline().Pipeline",
+								"type": "Expression"
+							},
+							"type": "String"
+						},
+						"TXT_EXEC_REAS": {
+							"value": {
+								"value": "Issue while loading monthly table for rollup",
+								"type": "Expression"
+							},
+							"type": "String"
+						}
+					}
+				},
+				"linkedServiceName": {
+					"referenceName": "AzureSqlDW2",
+					"type": "LinkedServiceReference"
+				}
+			}
+		],
+		"parameters": {
+			"Source_File": {
+				"type": "string",
+				"defaultValue": "NA"
+			},
+			"notebook_path": {
+				"type": "string",
+				"defaultValue": "/DataEngineering/DPG/KPI_Daily_Files"
+			}
+		},
+		"variables": {
+			"Count": {
+				"type": "String",
+				"defaultValue": "0"
+			},
+			"count_temp": {
+				"type": "String",
+				"defaultValue": "0"
+			},
+			"FinalStatus": {
+				"type": "Boolean"
+			}
+		},
+		"folder": {
+			"name": "PARTNER_KPI"
+		},
+		"annotations": [],
+		"lastPublishTime": "2023-03-21T02:00:52Z"
+	},
+	"type": "Microsoft.DataFactory/factories/pipelines"
+}

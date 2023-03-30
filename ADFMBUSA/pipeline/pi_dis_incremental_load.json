@@ -1,0 +1,235 @@
+{
+	"name": "pi_dis_incremental_load",
+	"properties": {
+		"activities": [
+			{
+				"name": "Read Delta Load JSON File",
+				"type": "Lookup",
+				"dependsOn": [],
+				"policy": {
+					"timeout": "7.00:00:00",
+					"retry": 0,
+					"retryIntervalInSeconds": 30,
+					"secureOutput": false,
+					"secureInput": false
+				},
+				"userProperties": [],
+				"typeProperties": {
+					"source": {
+						"type": "JsonSource",
+						"storeSettings": {
+							"type": "AzureBlobFSReadSettings",
+							"recursive": true,
+							"wildcardFolderPath": {
+								"value": "adls-dealer-dis/",
+								"type": "Expression"
+							},
+							"wildcardFileName": "09_DLR_DIM.json",
+							"enablePartitionDiscovery": false
+						},
+						"formatSettings": {
+							"type": "JsonReadSettings"
+						}
+					},
+					"dataset": {
+						"referenceName": "adw_prtnr_json",
+						"type": "DatasetReference"
+					},
+					"firstRowOnly": false
+				}
+			},
+			{
+				"name": "ForEach1",
+				"type": "ForEach",
+				"dependsOn": [
+					{
+						"activity": "Read Delta Load JSON File",
+						"dependencyConditions": [
+							"Succeeded"
+						]
+					}
+				],
+				"userProperties": [],
+				"typeProperties": {
+					"items": {
+						"value": "@activity('Read Delta Load JSON File').output.value",
+						"type": "Expression"
+					},
+					"isSequential": true,
+					"activities": [
+						{
+							"name": "DBx_Transform",
+							"type": "DatabricksNotebook",
+							"dependsOn": [],
+							"policy": {
+								"timeout": "7.00:00:00",
+								"retry": 0,
+								"retryIntervalInSeconds": 30,
+								"secureOutput": false,
+								"secureInput": false
+							},
+							"userProperties": [],
+							"typeProperties": {
+								"notebookPath": {
+									"value": "@item().notebook_path",
+									"type": "Expression"
+								}
+							},
+							"linkedServiceName": {
+								"referenceName": "MBUSA_DEV",
+								"type": "LinkedServiceReference"
+							}
+						},
+						{
+							"name": "File_Found",
+							"type": "IfCondition",
+							"dependsOn": [
+								{
+									"activity": "DBx_Transform",
+									"dependencyConditions": [
+										"Succeeded"
+									]
+								}
+							],
+							"userProperties": [],
+							"typeProperties": {
+								"expression": {
+									"value": "@equals(activity('DBx_Transform').output.runOutput,'Success')",
+									"type": "Expression"
+								},
+								"ifTrueActivities": [
+									{
+										"name": "Create_STG_TBL",
+										"type": "SqlServerStoredProcedure",
+										"dependsOn": [],
+										"policy": {
+											"timeout": "7.00:00:00",
+											"retry": 0,
+											"retryIntervalInSeconds": 30,
+											"secureOutput": false,
+											"secureInput": false
+										},
+										"userProperties": [],
+										"typeProperties": {
+											"storedProcedureName": {
+												"value": "@concat(item().stageschema,'.',item().stageproc)",
+												"type": "Expression"
+											}
+										},
+										"linkedServiceName": {
+											"referenceName": "AzureSqlDW2",
+											"type": "LinkedServiceReference"
+										}
+									},
+									{
+										"name": "Copy_to_ADW_STG",
+										"type": "Copy",
+										"dependsOn": [
+											{
+												"activity": "Create_STG_TBL",
+												"dependencyConditions": [
+													"Succeeded"
+												]
+											}
+										],
+										"policy": {
+											"timeout": "7.00:00:00",
+											"retry": 0,
+											"retryIntervalInSeconds": 30,
+											"secureOutput": false,
+											"secureInput": false
+										},
+										"userProperties": [],
+										"typeProperties": {
+											"source": {
+												"type": "ParquetSource",
+												"storeSettings": {
+													"type": "AzureBlobFSReadSettings",
+													"recursive": true,
+													"wildcardFolderPath": {
+														"value": "@concat('/processed/',item().table,'/year=',utcnow('yyyy'),'/month=',utcnow('MM'),'/day=',utcnow('dd'))",
+														"type": "Expression"
+													},
+													"wildcardFileName": "*.parquet",
+													"enablePartitionDiscovery": false
+												}
+											},
+											"sink": {
+												"type": "SqlDWSink"
+											},
+											"enableStaging": false
+										},
+										"inputs": [
+											{
+												"referenceName": "DS_base_pattern_parquet",
+												"type": "DatasetReference",
+												"parameters": {
+													"source_container_name": {
+														"value": "@item().container",
+														"type": "Expression"
+													}
+												}
+											}
+										],
+										"outputs": [
+											{
+												"referenceName": "base_pattern_dw",
+												"type": "DatasetReference",
+												"parameters": {
+													"schema_name": {
+														"value": "@item().stageschema",
+														"type": "Expression"
+													},
+													"table_name": {
+														"value": "@item().table",
+														"type": "Expression"
+													}
+												}
+											}
+										]
+									},
+									{
+										"name": "Insert_Update_Drop",
+										"type": "SqlServerStoredProcedure",
+										"dependsOn": [
+											{
+												"activity": "Copy_to_ADW_STG",
+												"dependencyConditions": [
+													"Succeeded"
+												]
+											}
+										],
+										"policy": {
+											"timeout": "7.00:00:00",
+											"retry": 0,
+											"retryIntervalInSeconds": 30,
+											"secureOutput": false,
+											"secureInput": false
+										},
+										"userProperties": [],
+										"typeProperties": {
+											"storedProcedureName": {
+												"value": "@concat(item().stageschema,'.',item().mainproc)",
+												"type": "Expression"
+											}
+										},
+										"linkedServiceName": {
+											"referenceName": "AzureSqlDW2",
+											"type": "LinkedServiceReference"
+										}
+									}
+								]
+							}
+						}
+					]
+				}
+			}
+		],
+		"folder": {
+			"name": "DIS"
+		},
+		"annotations": [],
+		"lastPublishTime": "2023-03-21T02:01:19Z"
+	},
+	"type": "Microsoft.DataFactory/factories/pipelines"
+}

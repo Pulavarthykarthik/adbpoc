@@ -1,0 +1,15 @@
+{
+	"name": "Gen2_Domain_ADLS",
+	"type": "Microsoft.DataFactory/factories/linkedservices",
+	"properties": {
+		"annotations": [],
+		"type": "AzureBlobFS",
+		"typeProperties": {
+			"url": "https://dl0mbusa0us0krbn.dfs.core.windows.net"
+		},
+		"connectVia": {
+			"referenceName": "coe-us-ir-azu-xbs-linked",
+			"type": "IntegrationRuntimeReference"
+		}
+	}
+}

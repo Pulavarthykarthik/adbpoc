@@ -8,7 +8,7 @@ trigger:
 
   paths:
     include:
-    - ADFIntegration
+    - ADFMBUSA
 
 variables:
 - group: mbusa-adf

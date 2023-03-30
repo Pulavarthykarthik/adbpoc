@@ -1,0 +1,122 @@
+{
+	"name": "vista_cvp_weekly",
+	"properties": {
+		"description": "Urban Science tables incremental truncate reload",
+		"activities": [
+			{
+				"name": "Lookup_Tables",
+				"type": "Lookup",
+				"dependsOn": [],
+				"policy": {
+					"timeout": "7.00:00:00",
+					"retry": 0,
+					"retryIntervalInSeconds": 30,
+					"secureOutput": false,
+					"secureInput": false
+				},
+				"userProperties": [],
+				"typeProperties": {
+					"source": {
+						"type": "JsonSource",
+						"storeSettings": {
+							"type": "AzureBlobFSReadSettings",
+							"recursive": true,
+							"wildcardFileName": "*.json",
+							"enablePartitionDiscovery": false
+						},
+						"formatSettings": {
+							"type": "JsonReadSettings"
+						}
+					},
+					"dataset": {
+						"referenceName": "vista_cvp_config",
+						"type": "DatasetReference"
+					},
+					"firstRowOnly": false
+				}
+			},
+			{
+				"name": "Kickoff_Pipelines",
+				"type": "ForEach",
+				"dependsOn": [
+					{
+						"activity": "Lookup_Tables",
+						"dependencyConditions": [
+							"Succeeded"
+						]
+					}
+				],
+				"userProperties": [],
+				"typeProperties": {
+					"items": {
+						"value": "@activity('Lookup_Tables').output.value",
+						"type": "Expression"
+					},
+					"isSequential": false,
+					"activities": [
+						{
+							"name": "if_truncate_and_reload",
+							"type": "IfCondition",
+							"dependsOn": [],
+							"userProperties": [],
+							"typeProperties": {
+								"expression": {
+									"value": "@equals(item().pipeline,'truncate_reload')",
+									"type": "Expression"
+								},
+								"ifFalseActivities": [
+									{
+										"name": "execute_insert_update",
+										"type": "ExecutePipeline",
+										"dependsOn": [],
+										"userProperties": [],
+										"typeProperties": {
+											"pipeline": {
+												"referenceName": "incremental_insert_update",
+												"type": "PipelineReference"
+											},
+											"waitOnCompletion": true,
+											"parameters": {
+												"schema_name": {
+													"value": "@item().schema_name",
+													"type": "Expression"
+												},
+												"table_name": {
+													"value": "@item().table",
+													"type": "Expression"
+												},
+												"container_name": {
+													"value": "@item().container_name",
+													"type": "Expression"
+												},
+												"run_date": {
+													"value": "@if(empty(pipeline().parameters.run_date),utcnow('yyyy-MM-dd'),pipeline().parameters.run_date)",
+													"type": "Expression"
+												},
+												"notebook_path": {
+													"value": "@item().notebook_path",
+													"type": "Expression"
+												}
+											}
+										}
+									}
+								]
+							}
+						}
+					]
+				}
+			}
+		],
+		"parameters": {
+			"run_date": {
+				"type": "string"
+			}
+		},
+		"folder": {
+			"name": "VISTA"
+		},
+		"annotations": [],
+		"lastPublishTime": "2023-03-21T02:01:34Z"
+	},
+	"type": "Microsoft.DataFactory/factories/pipelines"
+}

@@ -1,0 +1,14 @@
+{
+	"name": "MBUSA_SAP_DATABRICKS",
+	"type": "Microsoft.DataFactory/factories/linkedservices",
+	"properties": {
+		"description": "DATA BRICKS LIKED SERVICE FOR MBUSA SAP DATA MIGRATION",
+		"annotations": [],
+		"type": "AzureDatabricks",
+		"typeProperties": {
+			"domain": "https://adb-6192355565634015.15.azuredatabricks.net",
+			"existingClusterId": "0111-170021-uf66dfi5",
+			"encryptedCredential": "ew0KICAiVmVyc2lvbiI6ICIyMDE3LTExLTMwIiwNCiAgIlByb3RlY3Rpb25Nb2RlIjogIktleSIsDQogICJTZWNyZXRDb250ZW50VHlwZSI6ICJQbGFpbnRleHQiLA0KICAiQ3JlZGVudGlhbElkIjogIkRBVEFGQUNUT1JZQDMwQTI4QzNGLTUzNUItNEU2RS1BQTc3LTEzQThFOUFFNjk4MV9mNjViNGRjMS0yZmJkLTQ5NWUtYmYwZS04ZTU3Yjc3YmU3N2QiDQp9"
+		}
+	}
+}

@@ -1,0 +1,64 @@
+{
+	"name": "copy_email_engagement_files_to_mbusa_data_lake",
+	"properties": {
+		"description": "This pipeline will copy NBO subscription files from domain data lake to MBUSA data lake. CPS-EDW container is used as a temporary solution. ",
+		"activities": [
+			{
+				"name": "copy email engagement files",
+				"description": "This activity will copy the zip file from domain data lake to MBUSA data lake.",
+				"type": "Copy",
+				"dependsOn": [],
+				"policy": {
+					"timeout": "7.00:00:00",
+					"retry": 0,
+					"retryIntervalInSeconds": 30,
+					"secureOutput": false,
+					"secureInput": false
+				},
+				"userProperties": [],
+				"typeProperties": {
+					"source": {
+						"type": "BinarySource",
+						"storeSettings": {
+							"type": "AzureBlobFSReadSettings",
+							"recursive": true,
+							"wildcardFileName": "DAPS+SALESFORCE+NBO+EML+ENG+*",
+							"deleteFilesAfterCompletion": false
+						},
+						"formatSettings": {
+							"type": "BinaryReadSettings",
+							"compressionProperties": {
+								"type": "ZipDeflateReadSettings"
+							}
+						}
+					},
+					"sink": {
+						"type": "BinarySink",
+						"storeSettings": {
+							"type": "AzureBlobFSWriteSettings"
+						}
+					},
+					"enableStaging": false
+				},
+				"inputs": [
+					{
+						"referenceName": "nbo_model_attribution_file_source",
+						"type": "DatasetReference"
+					}
+				],
+				"outputs": [
+					{
+						"referenceName": "nbo_eml_eng_file_dest_copy",
+						"type": "DatasetReference"
+					}
+				]
+			}
+		],
+		"folder": {
+			"name": "SALESFORCE"
+		},
+		"annotations": [],
+		"lastPublishTime": "2023-03-21T02:00:52Z"
+	},
+	"type": "Microsoft.DataFactory/factories/pipelines"
+}

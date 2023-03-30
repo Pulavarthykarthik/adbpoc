@@ -1,0 +1,99 @@
+{
+	"name": "truncate_reload_full_load",
+	"properties": {
+		"activities": [
+			{
+				"name": "Copy_to_ADW",
+				"type": "Copy",
+				"dependsOn": [],
+				"policy": {
+					"timeout": "7.00:00:00",
+					"retry": 0,
+					"retryIntervalInSeconds": 30,
+					"secureOutput": false,
+					"secureInput": false
+				},
+				"userProperties": [],
+				"typeProperties": {
+					"source": {
+						"type": "DelimitedTextSource",
+						"storeSettings": {
+							"type": "AzureBlobFSReadSettings",
+							"recursive": true,
+							"wildcardFolderPath": {
+								"value": "/WARRANTY/FFV_DLR_SMY/",
+								"type": "Expression"
+							},
+							"wildcardFileName": "*.csv",
+							"enablePartitionDiscovery": false
+						},
+						"formatSettings": {
+							"type": "DelimitedTextReadSettings"
+						}
+					},
+					"sink": {
+						"type": "SqlDWSink",
+						"preCopyScript": {
+							"value": "@{concat('TRUNCATE table ',pipeline().parameters.schema_name,'.',pipeline().parameters.table_name)}",
+							"type": "Expression"
+						},
+						"disableMetricsCollection": false
+					},
+					"enableStaging": false,
+					"translator": {
+						"type": "TabularTranslator",
+						"typeConversion": true,
+						"typeConversionSettings": {
+							"allowDataTruncation": true,
+							"treatBooleanAsNumber": false
+						}
+					}
+				},
+				"inputs": [
+					{
+						"referenceName": "base_pattern_csv",
+						"type": "DatasetReference",
+						"parameters": {
+							"source_container_name": {
+								"value": "@pipeline().parameters.container_name",
+								"type": "Expression"
+							}
+						}
+					}
+				],
+				"outputs": [
+					{
+						"referenceName": "base_pattern_dw",
+						"type": "DatasetReference",
+						"parameters": {
+							"schema_name": {
+								"value": "@pipeline().parameters.schema_name",
+								"type": "Expression"
+							},
+							"table_name": {
+								"value": "@pipeline().parameters.table_name",
+								"type": "Expression"
+							}
+						}
+					}
+				]
+			}
+		],
+		"parameters": {
+			"table_name": {
+				"type": "string"
+			},
+			"container_name": {
+				"type": "string",
+				"defaultValue": "adls-wrnty-edw"
+			},
+			"schema_name": {
+				"type": "string",
+				"defaultValue": "ADW_EngSrv_KPI_EDW"
+			}
+		},
+		"annotations": [],
+		"lastPublishTime": "2023-03-21T02:01:21Z"
+	},
+	"type": "Microsoft.DataFactory/factories/pipelines"
+}

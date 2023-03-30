@@ -1,0 +1,109 @@
+{
+	"name": "generate_send_email",
+	"properties": {
+		"description": "Use for sending and generating email",
+		"activities": [
+			{
+				"name": "dbx_generate_notifications",
+				"type": "DatabricksNotebook",
+				"dependsOn": [],
+				"policy": {
+					"timeout": "0.12:00:00",
+					"retry": 0,
+					"retryIntervalInSeconds": 30,
+					"secureOutput": false,
+					"secureInput": false
+				},
+				"userProperties": [],
+				"typeProperties": {
+					"notebookPath": {
+						"value": "/DataEngineering/Common/Notification/generate_email",
+						"type": "Expression"
+					},
+					"baseParameters": {
+						"param": {
+							"value": "@pipeline().parameters.param",
+							"type": "Expression"
+						},
+						"notification_type": {
+							"value": "@pipeline().parameters.notification_type",
+							"type": "Expression"
+						},
+						"pipeline_name": {
+							"value": "@pipeline().parameters.pipeline_name",
+							"type": "Expression"
+						}
+					}
+				},
+				"linkedServiceName": {
+					"referenceName": "MBUSA_DEV",
+					"type": "LinkedServiceReference"
+				}
+			},
+			{
+				"name": "ForEachNotification",
+				"type": "ForEach",
+				"dependsOn": [
+					{
+						"activity": "dbx_generate_notifications",
+						"dependencyConditions": [
+							"Succeeded"
+						]
+					}
+				],
+				"userProperties": [],
+				"typeProperties": {
+					"items": {
+						"value": "@activity('dbx_generate_notifications').output.runOutput",
+						"type": "Expression"
+					},
+					"activities": [
+						{
+							"name": "func_send_notification",
+							"type": "AzureFunctionActivity",
+							"dependsOn": [],
+							"policy": {
+								"timeout": "0.12:00:00",
+								"retry": 0,
+								"retryIntervalInSeconds": 30,
+								"secureOutput": false,
+								"secureInput": false
+							},
+							"userProperties": [],
+							"typeProperties": {
+								"functionName": "sendEmailAlert",
+								"method": "POST",
+								"body": {
+									"value": "@concat('{\"email_reciever\": \"',item().email_reciever,'\",\"cc\": \"',item().cc,'\",\"subject\": \"',item().subject,'\",\"email_body\":\"',item().email_body,'\",\"Data_Factory\":\"',pipeline().DataFactory,'\",\"Pipeline\":\"',pipeline().Pipeline,'\"}')",
+									"type": "Expression"
+								}
+							},
+							"linkedServiceName": {
+								"referenceName": "AzureFunction_LinkedService",
+								"type": "LinkedServiceReference"
+							}
+						}
+					]
+				}
+			}
+		],
+		"parameters": {
+			"notification_type": {
+				"type": "string"
+			},
+			"pipeline_name": {
+				"type": "string"
+			},
+			"param": {
+				"type": "string"
+			},
+			"run_date": {
+				"type": "string"
+			}
+		},
+		"folder": {
+			"name": "Notifications"
+		},
+		"annotations": []
+	}
+}

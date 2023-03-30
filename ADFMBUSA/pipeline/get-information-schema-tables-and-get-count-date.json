@@ -1,0 +1,382 @@
+{
+	"name": "get-information-schema-tables-and-get-count-date",
+	"properties": {
+		"activities": [
+			{
+				"name": "LookupDW_UPDT_DTInInformationSchema",
+				"type": "Lookup",
+				"dependsOn": [
+					{
+						"activity": "DeleteOldOutputFiles",
+						"dependencyConditions": [
+							"Completed"
+						]
+					}
+				],
+				"policy": {
+					"timeout": "0.12:00:00",
+					"retry": 0,
+					"retryIntervalInSeconds": 30,
+					"secureOutput": false,
+					"secureInput": false
+				},
+				"userProperties": [],
+				"typeProperties": {
+					"source": {
+						"type": "SqlDWSource",
+						"sqlReaderQuery": "SELECT DISTINCT T.TABLE_SCHEMA,T.TABLE_NAME,\r\nconcat(t.table_schema,'.',t.table_name) as Schema_Table_Name \r\nFROM INFORMATION_SCHEMA.TABLES t \r\ninner join information_schema.columns c on t.table_schema=c.table_schema \r\nand t.table_name = c.table_name \r\nWHERE C.COLUMN_NAME IN ('DW_UPDT_DT') \r\nand T.TABLE_NAME NOT LIKE '%-%' \r\nAND T.TABLE_NAME NOT LIKE '%EXTERNAL' \r\nAND T.TABLE_NAME NOT LIKE '%EXT'\r\nAND T.TABLE_TYPE = 'BASE TABLE'",
+						"queryTimeout": "02:00:00",
+						"partitionOption": "None"
+					},
+					"dataset": {
+						"referenceName": "AzureSynapseAnalyticsSQLDB",
+						"type": "DatasetReference"
+					},
+					"firstRowOnly": false
+				}
+			},
+			{
+				"name": "LookupDTS_DW_UPDTInInformationSchema",
+				"type": "Lookup",
+				"dependsOn": [
+					{
+						"activity": "DeleteOldOutputFiles",
+						"dependencyConditions": [
+							"Completed"
+						]
+					}
+				],
+				"policy": {
+					"timeout": "0.12:00:00",
+					"retry": 0,
+					"retryIntervalInSeconds": 30,
+					"secureOutput": false,
+					"secureInput": false
+				},
+				"userProperties": [],
+				"typeProperties": {
+					"source": {
+						"type": "SqlDWSource",
+						"sqlReaderQuery": "SELECT DISTINCT T.TABLE_SCHEMA,T.TABLE_NAME,concat(t.table_schema,'.',t.table_name) as Schema_Table_Name \r\nFROM INFORMATION_SCHEMA.TABLES t \r\ninner join information_schema.columns c on t.table_schema=c.table_schema \r\nand t.table_name = c.table_name \r\nWHERE C.COLUMN_NAME IN ('DTS_DW_UPDT') \r\nand T.TABLE_NAME NOT LIKE ('%-%') \r\nAND T.TABLE_NAME NOT LIKE '%EXTERNAL' \r\nAND T.TABLE_NAME NOT LIKE '%EXT' \r\nAND T.TABLE_NAME <> 'accessory_ext_sch'\r\nAND T.TABLE_TYPE = 'BASE TABLE'\r\nORDER BY T.TABLE_NAME",
+						"queryTimeout": "02:00:00",
+						"partitionOption": "None"
+					},
+					"dataset": {
+						"referenceName": "AzureSynapseAnalyticsSQLDB",
+						"type": "DatasetReference"
+					},
+					"firstRowOnly": false
+				}
+			},
+			{
+				"name": "ForEachTableList_DW_UPDT_DT",
+				"type": "ForEach",
+				"dependsOn": [
+					{
+						"activity": "LookupDW_UPDT_DTInInformationSchema",
+						"dependencyConditions": [
+							"Succeeded"
+						]
+					}
+				],
+				"userProperties": [],
+				"typeProperties": {
+					"items": {
+						"value": "@activity('LookupDW_UPDT_DTInInformationSchema').output.value",
+						"type": "Expression"
+					},
+					"batchCount": 20,
+					"activities": [
+						{
+							"name": "Copy data1",
+							"type": "Copy",
+							"dependsOn": [],
+							"policy": {
+								"timeout": "0.12:00:00",
+								"retry": 0,
+								"retryIntervalInSeconds": 30,
+								"secureOutput": false,
+								"secureInput": false
+							},
+							"userProperties": [],
+							"typeProperties": {
+								"source": {
+									"type": "SqlDWSource",
+									"sqlReaderQuery": {
+										"value": "select * from (select distinct count(*) as Row_Count,cast(DW_UPDT_DT as date) as \"Last_Update_date\", '@{item().Schema_Table_Name}' as \"Table_Name\",ROW_NUMBER() OVER(ORDER BY cast(DW_UPDT_DT as date) desc) AS Row# from @{item().Schema_Table_Name} group by cast(DW_UPDT_DT as date))a where a.Row# <=3 order by a.Last_Update_date desc",
+										"type": "Expression"
+									},
+									"queryTimeout": "02:00:00",
+									"partitionOption": "None"
+								},
+								"sink": {
+									"type": "DelimitedTextSink",
+									"storeSettings": {
+										"type": "AzureBlobFSWriteSettings"
+									},
+									"formatSettings": {
+										"type": "DelimitedTextWriteSettings",
+										"quoteAllText": true,
+										"fileExtension": ".txt"
+									}
+								},
+								"enableStaging": false,
+								"translator": {
+									"type": "TabularTranslator",
+									"typeConversion": true,
+									"typeConversionSettings": {
+										"allowDataTruncation": true,
+										"treatBooleanAsNumber": false
+									}
+								}
+							},
+							"inputs": [
+								{
+									"referenceName": "AzureSynapseAnalyticsSQLDB",
+									"type": "DatasetReference"
+								}
+							],
+							"outputs": [
+								{
+									"referenceName": "Export_Select_Output",
+									"type": "DatasetReference"
+								}
+							]
+						}
+					]
+				}
+			},
+			{
+				"name": "ForEachTableList_DTS_DW_UPDT",
+				"type": "ForEach",
+				"dependsOn": [
+					{
+						"activity": "LookupDTS_DW_UPDTInInformationSchema",
+						"dependencyConditions": [
+							"Succeeded"
+						]
+					}
+				],
+				"userProperties": [],
+				"typeProperties": {
+					"items": {
+						"value": "@activity('LookupDTS_DW_UPDTInInformationSchema').output.value",
+						"type": "Expression"
+					},
+					"batchCount": 20,
+					"activities": [
+						{
+							"name": "Copy data2",
+							"type": "Copy",
+							"dependsOn": [],
+							"policy": {
+								"timeout": "0.12:00:00",
+								"retry": 0,
+								"retryIntervalInSeconds": 30,
+								"secureOutput": false,
+								"secureInput": false
+							},
+							"userProperties": [],
+							"typeProperties": {
+								"source": {
+									"type": "SqlDWSource",
+									"sqlReaderQuery": {
+										"value": "select * from (select distinct count(*) as Row_Count,cast(DTS_DW_UPDT as date) as \"Last_Update_date\", '@{item().Schema_Table_Name}' as \"Table_Name\",ROW_NUMBER() OVER(ORDER BY cast(DTS_DW_UPDT as date) desc) AS Row# from @{item().Schema_Table_Name} group by cast(DTS_DW_UPDT as date))a where a.Row# <=3 order by a.Last_Update_date desc",
+										"type": "Expression"
+									},
+									"queryTimeout": "02:00:00",
+									"partitionOption": "None"
+								},
+								"sink": {
+									"type": "DelimitedTextSink",
+									"storeSettings": {
+										"type": "AzureBlobFSWriteSettings"
+									},
+									"formatSettings": {
+										"type": "DelimitedTextWriteSettings",
+										"quoteAllText": true,
+										"fileExtension": ".txt"
+									}
+								},
+								"enableStaging": false,
+								"translator": {
+									"type": "TabularTranslator",
+									"typeConversion": true,
+									"typeConversionSettings": {
+										"allowDataTruncation": true,
+										"treatBooleanAsNumber": false
+									}
+								}
+							},
+							"inputs": [
+								{
+									"referenceName": "AzureSynapseAnalyticsSQLDB",
+									"type": "DatasetReference"
+								}
+							],
+							"outputs": [
+								{
+									"referenceName": "Export_Select_Output",
+									"type": "DatasetReference"
+								}
+							]
+						}
+					]
+				}
+			},
+			{
+				"name": "CopyDataMergeFiles",
+				"type": "Copy",
+				"dependsOn": [
+					{
+						"activity": "ForEachTableList_DW_UPDT_DT",
+						"dependencyConditions": [
+							"Completed"
+						]
+					},
+					{
+						"activity": "ForEachTableList_DTS_DW_UPDT",
+						"dependencyConditions": [
+							"Completed"
+						]
+					}
+				],
+				"policy": {
+					"timeout": "0.12:00:00",
+					"retry": 0,
+					"retryIntervalInSeconds": 30,
+					"secureOutput": false,
+					"secureInput": false
+				},
+				"userProperties": [],
+				"typeProperties": {
+					"source": {
+						"type": "DelimitedTextSource",
+						"storeSettings": {
+							"type": "AzureBlobFSReadSettings",
+							"recursive": true,
+							"wildcardFolderPath": "gaurku/output",
+							"wildcardFileName": "*",
+							"enablePartitionDiscovery": false
+						},
+						"formatSettings": {
+							"type": "DelimitedTextReadSettings"
+						}
+					},
+					"sink": {
+						"type": "DelimitedTextSink",
+						"storeSettings": {
+							"type": "AzureBlobFSWriteSettings",
+							"copyBehavior": "MergeFiles"
+						},
+						"formatSettings": {
+							"type": "DelimitedTextWriteSettings",
+							"quoteAllText": true,
+							"fileExtension": ".txt"
+						}
+					},
+					"enableStaging": false,
+					"translator": {
+						"type": "TabularTranslator",
+						"typeConversion": true,
+						"typeConversionSettings": {
+							"allowDataTruncation": true,
+							"treatBooleanAsNumber": false
+						}
+					}
+				},
+				"inputs": [
+					{
+						"referenceName": "Select_AllFiles_Source",
+						"type": "DatasetReference"
+					}
+				],
+				"outputs": [
+					{
+						"referenceName": "Select_MergeOutput",
+						"type": "DatasetReference"
+					}
+				]
+			},
+			{
+				"name": "DeleteOutputFolderFiles",
+				"type": "Delete",
+				"dependsOn": [
+					{
+						"activity": "CopyDataMergeFiles",
+						"dependencyConditions": [
+							"Completed"
+						]
+					}
+				],
+				"policy": {
+					"timeout": "0.12:00:00",
+					"retry": 0,
+					"retryIntervalInSeconds": 30,
+					"secureOutput": false,
+					"secureInput": false
+				},
+				"userProperties": [],
+				"typeProperties": {
+					"dataset": {
+						"referenceName": "Delete_OutputFolder_File",
+						"type": "DatasetReference"
+					},
+					"logStorageSettings": {
+						"linkedServiceName": {
+							"referenceName": "LS_ADLS_XTOMSUSRSVEDWDEVADLS_v2",
+							"type": "LinkedServiceReference"
+						},
+						"path": "data-engineering/gaurku/Logs"
+					},
+					"enableLogging": true,
+					"storeSettings": {
+						"type": "AzureBlobFSReadSettings",
+						"recursive": true,
+						"wildcardFileName": "*.txt",
+						"enablePartitionDiscovery": false
+					}
+				}
+			},
+			{
+				"name": "DeleteOldOutputFiles",
+				"type": "Delete",
+				"dependsOn": [],
+				"policy": {
+					"timeout": "0.12:00:00",
+					"retry": 0,
+					"retryIntervalInSeconds": 30,
+					"secureOutput": false,
+					"secureInput": false
+				},
+				"userProperties": [],
+				"typeProperties": {
+					"dataset": {
+						"referenceName": "DeleteOldFilesOutputNewFolder",
+						"type": "DatasetReference"
+					},
+					"logStorageSettings": {
+						"linkedServiceName": {
+							"referenceName": "LS_ADLS_XTOMSUSRSVEDWDEVADLS_v2",
+							"type": "LinkedServiceReference"
+						},
+						"path": "data-engineering/gaurku/Logs"
+					},
+					"enableLogging": true,
+					"storeSettings": {
+						"type": "AzureBlobFSReadSettings",
+						"recursive": true,
+						"wildcardFileName": "*.txt",
+						"enablePartitionDiscovery": false
+					}
+				}
+			}
+		],
+		"folder": {
+			"name": "Monitor"
+		},
+		"annotations": [],
+		"lastPublishTime": "2023-03-21T02:01:25Z"
+	},
+	"type": "Microsoft.DataFactory/factories/pipelines"
+}

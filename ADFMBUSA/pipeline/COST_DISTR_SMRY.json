@@ -1,0 +1,476 @@
+{
+	"name": "COST_DISTR_SMRY",
+	"properties": {
+		"activities": [
+			{
+				"name": "File_Found",
+				"type": "IfCondition",
+				"dependsOn": [
+					{
+						"activity": "Run Notebooks",
+						"dependencyConditions": [
+							"Succeeded"
+						]
+					}
+				],
+				"userProperties": [],
+				"typeProperties": {
+					"expression": {
+						"value": "@and(equals(activity('VALIDATE_FILE_RUN').output.runOutput,'Continue'), equals(activity('DBx_Transform_Cost_distr_smry_1').output.runOutput,'Success'))",
+						"type": "Expression"
+					},
+					"ifTrueActivities": [
+						{
+							"name": "Execute Inner Act For 1",
+							"type": "ExecutePipeline",
+							"dependsOn": [],
+							"userProperties": [],
+							"typeProperties": {
+								"pipeline": {
+									"referenceName": "COST_DISTR_SMRY_INNER_ACTIVITY",
+									"type": "PipelineReference"
+								},
+								"waitOnCompletion": true,
+								"parameters": {
+									"schema_name": {
+										"value": "@pipeline().parameters.schema_name",
+										"type": "Expression"
+									},
+									"table_name": {
+										"value": "@pipeline().parameters.table_name",
+										"type": "Expression"
+									},
+									"container_name": {
+										"value": "@pipeline().parameters.container_name",
+										"type": "Expression"
+									},
+									"run_date": {
+										"value": "@pipeline().parameters.run_date",
+										"type": "Expression"
+									},
+									"notebook_path": {
+										"value": "@pipeline().parameters.notebook_path",
+										"type": "Expression"
+									},
+									"force_run": {
+										"value": "@pipeline().parameters.run_date",
+										"type": "Expression"
+									}
+								}
+							}
+						}
+					]
+				}
+			},
+			{
+				"name": "Run Notebooks",
+				"type": "IfCondition",
+				"dependsOn": [
+					{
+						"activity": "VALIDATE_FILE_RUN",
+						"dependencyConditions": [
+							"Succeeded"
+						]
+					}
+				],
+				"userProperties": [],
+				"typeProperties": {
+					"expression": {
+						"value": "@equals(activity('VALIDATE_FILE_RUN').output.runOutput,'Continue')",
+						"type": "Expression"
+					},
+					"ifTrueActivities": [
+						{
+							"name": "DBx_Transform_Cost_distr_smry_1",
+							"type": "DatabricksNotebook",
+							"dependsOn": [],
+							"policy": {
+								"timeout": "7.00:00:00",
+								"retry": 0,
+								"retryIntervalInSeconds": 30,
+								"secureOutput": false,
+								"secureInput": false
+							},
+							"userProperties": [],
+							"typeProperties": {
+								"notebookPath": {
+									"value": "@concat(pipeline().parameters.notebook_path,'_1')",
+									"type": "Expression"
+								},
+								"baseParameters": {
+									"run_date": {
+										"value": "@pipeline().parameters.run_date",
+										"type": "Expression"
+									},
+									"table_name": {
+										"value": "@pipeline().parameters.table_name",
+										"type": "Expression"
+									},
+									"container_name": {
+										"value": "@pipeline().parameters.container_name",
+										"type": "Expression"
+									}
+								}
+							},
+							"linkedServiceName": {
+								"referenceName": "MBUSA_DEV",
+								"type": "LinkedServiceReference"
+							}
+						}
+					]
+				}
+			},
+			{
+				"name": "VALIDATE_FILE_RUN",
+				"type": "DatabricksNotebook",
+				"dependsOn": [],
+				"policy": {
+					"timeout": "7.00:00:00",
+					"retry": 0,
+					"retryIntervalInSeconds": 30,
+					"secureOutput": false,
+					"secureInput": false
+				},
+				"userProperties": [],
+				"typeProperties": {
+					"notebookPath": "/DataEngineering/WARRANTY/VALIDATE_FILE_RUN",
+					"baseParameters": {
+						"pipeline_name": {
+							"value": "@pipeline()?.TriggeredByPipelineName",
+							"type": "Expression"
+						},
+						"table_name": {
+							"value": "@pipeline().parameters.table_name",
+							"type": "Expression"
+						},
+						"force_run": {
+							"value": "@pipeline().parameters.force_run",
+							"type": "Expression"
+						},
+						"run_date": {
+							"value": "@pipeline().parameters.run_date",
+							"type": "Expression"
+						}
+					}
+				},
+				"linkedServiceName": {
+					"referenceName": "MBUSA_DEV",
+					"type": "LinkedServiceReference"
+				}
+			},
+			{
+				"name": "File_Found 2",
+				"type": "IfCondition",
+				"dependsOn": [
+					{
+						"activity": "Run Notebooks 2",
+						"dependencyConditions": [
+							"Succeeded"
+						]
+					}
+				],
+				"userProperties": [],
+				"typeProperties": {
+					"expression": {
+						"value": "@and(equals(activity('VALIDATE_FILE_RUN').output.runOutput,'Continue'), equals(activity('DBx_Transform_cost_distr_smry_2').output.runOutput,'Success'))",
+						"type": "Expression"
+					},
+					"ifTrueActivities": [
+						{
+							"name": "Execute Inner Act For 2",
+							"type": "ExecutePipeline",
+							"dependsOn": [],
+							"userProperties": [],
+							"typeProperties": {
+								"pipeline": {
+									"referenceName": "COST_DISTR_SMRY_INNER_ACTIVITY",
+									"type": "PipelineReference"
+								},
+								"waitOnCompletion": true,
+								"parameters": {
+									"schema_name": {
+										"value": "@pipeline().parameters.schema_name",
+										"type": "Expression"
+									},
+									"table_name": {
+										"value": "@pipeline().parameters.table_name",
+										"type": "Expression"
+									},
+									"container_name": {
+										"value": "@pipeline().parameters.container_name",
+										"type": "Expression"
+									},
+									"run_date": {
+										"value": "@pipeline().parameters.run_date",
+										"type": "Expression"
+									},
+									"notebook_path": {
+										"value": "@pipeline().parameters.notebook_path",
+										"type": "Expression"
+									},
+									"force_run": {
+										"value": "@pipeline().parameters.run_date",
+										"type": "Expression"
+									}
+								}
+							}
+						}
+					]
+				}
+			},
+			{
+				"name": "Run Notebooks 2",
+				"type": "IfCondition",
+				"dependsOn": [
+					{
+						"activity": "File_Found",
+						"dependencyConditions": [
+							"Succeeded"
+						]
+					}
+				],
+				"userProperties": [],
+				"typeProperties": {
+					"expression": {
+						"value": "@equals(activity('VALIDATE_FILE_RUN').output.runOutput,'Continue')",
+						"type": "Expression"
+					},
+					"ifTrueActivities": [
+						{
+							"name": "DBx_Transform_cost_distr_smry_2",
+							"type": "DatabricksNotebook",
+							"dependsOn": [],
+							"policy": {
+								"timeout": "7.00:00:00",
+								"retry": 0,
+								"retryIntervalInSeconds": 30,
+								"secureOutput": false,
+								"secureInput": false
+							},
+							"userProperties": [],
+							"typeProperties": {
+								"notebookPath": {
+									"value": "@concat(pipeline().parameters.notebook_path,'_2')",
+									"type": "Expression"
+								},
+								"baseParameters": {
+									"run_date": {
+										"value": "@pipeline().parameters.run_date",
+										"type": "Expression"
+									},
+									"table_name": {
+										"value": "@pipeline().parameters.table_name",
+										"type": "Expression"
+									},
+									"container_name": {
+										"value": "@pipeline().parameters.container_name",
+										"type": "Expression"
+									}
+								}
+							},
+							"linkedServiceName": {
+								"referenceName": "MBUSA_DEV",
+								"type": "LinkedServiceReference"
+							}
+						}
+					]
+				}
+			},
+			{
+				"name": "File_Found 3",
+				"type": "IfCondition",
+				"dependsOn": [
+					{
+						"activity": "Run Notebooks 3",
+						"dependencyConditions": [
+							"Succeeded"
+						]
+					}
+				],
+				"userProperties": [],
+				"typeProperties": {
+					"expression": {
+						"value": "@and(equals(activity('VALIDATE_FILE_RUN').output.runOutput,'Continue'), equals(activity('DBx_Transform_cost_distr_smry_3').output.runOutput,'Success'))",
+						"type": "Expression"
+					},
+					"ifTrueActivities": [
+						{
+							"name": "Execute Inner Act For 3",
+							"type": "ExecutePipeline",
+							"dependsOn": [],
+							"userProperties": [],
+							"typeProperties": {
+								"pipeline": {
+									"referenceName": "COST_DISTR_SMRY_INNER_ACTIVITY",
+									"type": "PipelineReference"
+								},
+								"waitOnCompletion": true,
+								"parameters": {
+									"schema_name": {
+										"value": "@pipeline().parameters.schema_name",
+										"type": "Expression"
+									},
+									"table_name": {
+										"value": "@pipeline().parameters.table_name",
+										"type": "Expression"
+									},
+									"container_name": {
+										"value": "@pipeline().parameters.container_name",
+										"type": "Expression"
+									},
+									"run_date": {
+										"value": "@pipeline().parameters.run_date",
+										"type": "Expression"
+									},
+									"notebook_path": {
+										"value": "@pipeline().parameters.notebook_path",
+										"type": "Expression"
+									},
+									"force_run": {
+										"value": "@pipeline().parameters.run_date",
+										"type": "Expression"
+									}
+								}
+							}
+						}
+					]
+				}
+			},
+			{
+				"name": "Run Notebooks 3",
+				"type": "IfCondition",
+				"dependsOn": [
+					{
+						"activity": "File_Found 2",
+						"dependencyConditions": [
+							"Succeeded"
+						]
+					}
+				],
+				"userProperties": [],
+				"typeProperties": {
+					"expression": {
+						"value": "@equals(activity('VALIDATE_FILE_RUN').output.runOutput,'Continue')",
+						"type": "Expression"
+					},
+					"ifTrueActivities": [
+						{
+							"name": "DBx_Transform_cost_distr_smry_3",
+							"type": "DatabricksNotebook",
+							"dependsOn": [],
+							"policy": {
+								"timeout": "7.00:00:00",
+								"retry": 0,
+								"retryIntervalInSeconds": 30,
+								"secureOutput": false,
+								"secureInput": false
+							},
+							"userProperties": [],
+							"typeProperties": {
+								"notebookPath": {
+									"value": "@concat(pipeline().parameters.notebook_path,'_3')",
+									"type": "Expression"
+								},
+								"baseParameters": {
+									"run_date": {
+										"value": "@pipeline().parameters.run_date",
+										"type": "Expression"
+									},
+									"table_name": {
+										"value": "@pipeline().parameters.table_name",
+										"type": "Expression"
+									},
+									"container_name": {
+										"value": "@pipeline().parameters.container_name",
+										"type": "Expression"
+									}
+								}
+							},
+							"linkedServiceName": {
+								"referenceName": "MBUSA_DEV",
+								"type": "LinkedServiceReference"
+							}
+						}
+					]
+				}
+			},
+			{
+				"name": "If Condition To update Last Run",
+				"type": "IfCondition",
+				"dependsOn": [
+					{
+						"activity": "File_Found 3",
+						"dependencyConditions": [
+							"Succeeded"
+						]
+					}
+				],
+				"userProperties": [],
+				"typeProperties": {
+					"expression": {
+						"value": "@equals(activity('VALIDATE_FILE_RUN').output.runOutput,'Continue')",
+						"type": "Expression"
+					},
+					"ifTrueActivities": [
+						{
+							"name": "UPDATE_LAST_RUN",
+							"type": "DatabricksNotebook",
+							"dependsOn": [],
+							"policy": {
+								"timeout": "7.00:00:00",
+								"retry": 0,
+								"retryIntervalInSeconds": 30,
+								"secureOutput": false,
+								"secureInput": false
+							},
+							"userProperties": [],
+							"typeProperties": {
+								"notebookPath": "/DataEngineering/WARRANTY/UPDTAE_LAST_RUN_IN_JSON",
+								"baseParameters": {
+									"pipeline_name": {
+										"value": "@pipeline()?.TriggeredByPipelineName",
+										"type": "Expression"
+									},
+									"table_name": {
+										"value": "@pipeline().parameters.table_name",
+										"type": "Expression"
+									}
+								}
+							},
+							"linkedServiceName": {
+								"referenceName": "MBUSA_DEV",
+								"type": "LinkedServiceReference"
+							}
+						}
+					]
+				}
+			}
+		],
+		"parameters": {
+			"schema_name": {
+				"type": "string"
+			},
+			"table_name": {
+				"type": "string"
+			},
+			"container_name": {
+				"type": "string"
+			},
+			"run_date": {
+				"type": "string"
+			},
+			"notebook_path": {
+				"type": "string"
+			},
+			"force_run": {
+				"type": "string"
+			}
+		},
+		"folder": {
+			"name": "WARRANTY|Remarketing"
+		},
+		"annotations": [],
+		"lastPublishTime": "2023-03-21T02:01:25Z"
+	},
+	"type": "Microsoft.DataFactory/factories/pipelines"
+}

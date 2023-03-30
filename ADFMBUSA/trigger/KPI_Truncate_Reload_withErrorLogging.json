@@ -1,0 +1,36 @@
+{
+	"name": "KPI_Truncate_Reload_withErrorLogging",
+	"properties": {
+		"annotations": [],
+		"runtimeState": "Started",
+		"pipelines": [
+			{
+				"pipelineReference": {
+					"referenceName": "KPI_Truncate_Reload_withErrorLogging",
+					"type": "PipelineReference"
+				},
+				"parameters": {
+					"Source_File": "NA",
+					"notebook_path": "/DataEngineering/DPG/KPI_Daily_Files"
+				}
+			}
+		],
+		"type": "ScheduleTrigger",
+		"typeProperties": {
+			"recurrence": {
+				"frequency": "Day",
+				"interval": 1,
+				"startTime": "2022-12-29T00:29:00",
+				"timeZone": "Eastern Standard Time",
+				"schedule": {
+					"minutes": [
+						35
+					],
+					"hours": [
+						9
+					]
+				}
+			}
+		}
+	}
+}

@@ -1,0 +1,12 @@
+{
+	"name": "LS_MS_ADLS_SP_KV1",
+	"type": "Microsoft.DataFactory/factories/linkedservices",
+	"properties": {
+		"description": "LS_MS_ADLS_SP_KV1",
+		"annotations": [],
+		"type": "AzureKeyVault",
+		"typeProperties": {
+			"baseUrl": "https://ms-us-mbusa-daps-prod-kv.vault.azure.net/"
+		}
+	}
+}

@@ -1,0 +1,79 @@
+{
+	"name": "pipeline12",
+	"properties": {
+		"activities": [
+			{
+				"name": "Transform Notebook",
+				"type": "DatabricksNotebook",
+				"dependsOn": [],
+				"policy": {
+					"timeout": "7.00:00:00",
+					"retry": 0,
+					"retryIntervalInSeconds": 30,
+					"secureOutput": false,
+					"secureInput": false
+				},
+				"userProperties": [],
+				"typeProperties": {
+					"notebookPath": "/DataEngineering/CDM/main"
+				},
+				"linkedServiceName": {
+					"referenceName": "MBUSA_DEV",
+					"type": "LinkedServiceReference"
+				}
+			},
+			{
+				"name": "Execute Copy Pipeline",
+				"type": "ExecutePipeline",
+				"dependsOn": [
+					{
+						"activity": "Transform Notebook",
+						"dependencyConditions": [
+							"Succeeded"
+						]
+					},
+					{
+						"activity": "Notebook1",
+						"dependencyConditions": [
+							"Succeeded"
+						]
+					}
+				],
+				"userProperties": [],
+				"typeProperties": {
+					"pipeline": {
+						"referenceName": "copy_cdm",
+						"type": "PipelineReference"
+					},
+					"waitOnCompletion": true
+				}
+			},
+			{
+				"name": "Notebook1",
+				"type": "DatabricksNotebook",
+				"dependsOn": [],
+				"policy": {
+					"timeout": "7.00:00:00",
+					"retry": 0,
+					"retryIntervalInSeconds": 30,
+					"secureOutput": false,
+					"secureInput": false
+				},
+				"userProperties": [],
+				"typeProperties": {
+					"notebookPath": "/DataEngineering/CDM/main_1"
+				},
+				"linkedServiceName": {
+					"referenceName": "MBUSA_DEV",
+					"type": "LinkedServiceReference"
+				}
+			}
+		],
+		"folder": {
+			"name": "cddb"
+		},
+		"annotations": [],
+		"lastPublishTime": "2023-03-21T02:01:24Z"
+	},
+	"type": "Microsoft.DataFactory/factories/pipelines"
+}

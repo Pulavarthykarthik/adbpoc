@@ -1,0 +1,61 @@
+{
+	"name": "SWT_Daily_Incremental_looping_dates",
+	"properties": {
+		"activities": [
+			{
+				"name": "ForEach1",
+				"type": "ForEach",
+				"dependsOn": [],
+				"userProperties": [],
+				"typeProperties": {
+					"items": {
+						"value": "@pipeline().parameters.run_date_multi_param",
+						"type": "Expression"
+					},
+					"isSequential": false,
+					"activities": [
+						{
+							"name": "SWT_Daily_Incremental_bug_fix",
+							"type": "ExecutePipeline",
+							"dependsOn": [],
+							"userProperties": [],
+							"typeProperties": {
+								"pipeline": {
+									"referenceName": "SWT_Daily_Incremental_bug_fix",
+									"type": "PipelineReference"
+								},
+								"waitOnCompletion": true,
+								"parameters": {
+									"run_date_param": {
+										"value": "@item()",
+										"type": "Expression"
+									},
+									"schema_table": {
+										"value": "@pipeline().parameters.schema_table",
+										"type": "Expression"
+									}
+								}
+							}
+						}
+					]
+				}
+			}
+		],
+		"parameters": {
+			"run_date_multi_param": {
+				"type": "array",
+				"defaultValue": []
+			},
+			"schema_table": {
+				"type": "array",
+				"defaultValue": []
+			}
+		},
+		"folder": {
+			"name": "SWT_Data_Ingestion"
+		},
+		"annotations": [],
+		"lastPublishTime": "2023-03-21T02:01:32Z"
+	},
+	"type": "Microsoft.DataFactory/factories/pipelines"
+}

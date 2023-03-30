@@ -1,0 +1,12 @@
+{
+	"name": "LS_MS_ADLS_SP_KV",
+	"type": "Microsoft.DataFactory/factories/linkedservices",
+	"properties": {
+		"description": "LS_MS_ADLS_SP_KV ",
+		"annotations": [],
+		"type": "AzureKeyVault",
+		"typeProperties": {
+			"baseUrl": "https://xtokv-wx7buzhzkocye.vault.azure.net/"
+		}
+	}
+}

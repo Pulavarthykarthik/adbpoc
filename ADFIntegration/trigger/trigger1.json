@@ -2,17 +2,11 @@
 	"name": "trigger1",
 	"properties": {
 		"annotations": [],
-		"runtimeState": "Stopped",
+		"runtimeState": "Started",
 		"pipelines": [
 			{
 				"pipelineReference": {
-					"referenceName": "pipeline1",
-					"type": "PipelineReference"
-				}
-			},
-			{
-				"pipelineReference": {
-					"referenceName": "pipeline2",
+					"referenceName": "waitpipeline",
 					"type": "PipelineReference"
 				}
 			}
@@ -22,7 +16,7 @@
 			"recurrence": {
 				"frequency": "Minute",
 				"interval": 15,
-				"startTime": "2023-03-23T15:46:00Z",
+				"startTime": "2023-04-18T04:46:00Z",
 				"timeZone": "UTC"
 			}
 		}
